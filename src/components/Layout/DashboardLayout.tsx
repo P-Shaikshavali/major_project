@@ -2,23 +2,42 @@ import { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, PlusCircle, ClipboardList, User,
-  MessageSquare, LogOut, Moon, Sun, ShieldCheck, Lock
+  MessageSquare, LogOut, Moon, Sun, ShieldCheck, Lock,
+  GraduationCap, Home, Brain
 } from 'lucide-react';
 import useSessionSecurity from '../../hooks/useSessionSecurity';
 
-const navStudent = [
-  { to: '/dashboard/student',   icon: <LayoutDashboard size={16} />, label: 'Overview' },
-  { to: '/dashboard/submit',    icon: <PlusCircle size={16} />,      label: 'Submit Complaint' },
-  { to: '/dashboard/list',      icon: <ClipboardList size={16} />,   label: 'My Complaints' },
-  { to: '/dashboard/profile',   icon: <User size={16} />,            label: 'My Profile' },
-];
-const navFaculty = [
-  { to: '/dashboard/faculty',   icon: <ShieldCheck size={16} />,    label: 'Decision Support' },
-  { to: '/dashboard/authority', icon: <ClipboardList size={16} />,  label: 'Complaint Queue' },
-];
-const navAdmin = [
-  { to: '/dashboard/admin',     icon: <LayoutDashboard size={16} />, label: 'System Analytics' },
-];
+// ── Nav definitions per role ──────────────────────────────────────────────────
+const NAV_BY_ROLE: Record<string, { to: string; icon: React.ReactNode; label: string }[]> = {
+  Student: [
+    { to: '/dashboard/student',  icon: <LayoutDashboard size={16} />, label: 'Overview'        },
+    { to: '/dashboard/submit',   icon: <PlusCircle size={16} />,      label: 'Submit Complaint' },
+    { to: '/dashboard/list',     icon: <ClipboardList size={16} />,   label: 'My Complaints'   },
+    { to: '/dashboard/profile',  icon: <User size={16} />,            label: 'My Profile'      },
+  ],
+  Faculty: [
+    { to: '/dashboard/faculty',    icon: <ShieldCheck size={16} />,   label: 'Decision Support' },
+    { to: '/dashboard/authority',  icon: <ClipboardList size={16} />, label: 'Complaint Queue'  },
+  ],
+  Dean: [
+    { to: '/dashboard/dean',       icon: <GraduationCap size={16} />, label: 'Dean Dashboard'   },
+    { to: '/dashboard/authority',  icon: <ClipboardList size={16} />, label: 'All Complaints'   },
+  ],
+  HostelDean: [
+    { to: '/dashboard/hosteldean', icon: <Home size={16} />,          label: 'Hostel Dashboard' },
+    { to: '/dashboard/authority',  icon: <ClipboardList size={16} />, label: 'Complaint Queue'  },
+  ],
+  Admin: [
+    { to: '/dashboard/admin',      icon: <LayoutDashboard size={16} />, label: 'System Analytics' },
+    { to: '/dashboard/authority',  icon: <ClipboardList size={16} />,   label: 'Complaint Queue'  },
+    { to: '/dashboard/faculty',    icon: <Brain size={16} />,           label: 'Faculty View'    },
+  ],
+};
+
+const ROLE_LABELS: Record<string, string> = {
+  Student: 'STUDENT PORTAL', Faculty: 'FACULTY PORTAL', Dean: 'DEAN\'S OFFICE',
+  HostelDean: 'HOSTEL ADMIN', Admin: 'ADMIN PORTAL',
+};
 
 const DashboardLayout = () => {
   useNavigate(); // kept for future programmatic navigation
@@ -30,7 +49,7 @@ const DashboardLayout = () => {
     document.documentElement.classList.toggle('dark', dark);
   }, [dark]);
 
-  const navItems = role === 'Admin' ? navAdmin : role === 'Student' ? navStudent : navFaculty;
+  const navItems = NAV_BY_ROLE[role] ?? NAV_BY_ROLE.Student;
 
   const fmtTime = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 
@@ -84,7 +103,7 @@ const DashboardLayout = () => {
         {/* Role badge */}
         <div style={{ padding: '12px 18px 6px' }}>
           <p style={{ fontSize: 9, fontWeight: 700, color: 'var(--sidebar-section)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6 }}>
-            {role === 'Student' ? 'STUDENT' : role === 'Admin' ? 'ADMIN' : 'AUTHORITY'} PORTAL
+            {ROLE_LABELS[role] ?? 'PORTAL'}
           </p>
         </div>
 
@@ -97,12 +116,22 @@ const DashboardLayout = () => {
             </NavLink>
           ))}
 
+          {/* Support section — AI Chatbot opens the chatbot FAB (no hard redirect needed) */}
           <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', margin: '10px 0', padding: '10px 0 4px' }}>
             <p style={{ fontSize: 9, fontWeight: 700, color: 'var(--sidebar-section)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6, paddingLeft: 4 }}>SUPPORT</p>
-            <NavLink to="/dashboard/student" style={{ ...linkStyle({ isActive: false }) }}>
+            <button
+              onClick={() => {
+                // Trigger the chatbot FAB by clicking it programmatically
+                const fab = document.querySelector('[data-chatbot-fab]') as HTMLButtonElement;
+                if (fab) fab.click();
+              }}
+              style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 14px', borderRadius: 10, fontSize: 13, fontWeight: 400, color: 'var(--sidebar-text)', background: 'transparent', border: 'none', cursor: 'pointer', width: '100%', transition: 'all 0.15s' }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            >
               <MessageSquare size={16} style={{ opacity: 0.75 }} />
               AI Chatbot
-            </NavLink>
+            </button>
           </div>
         </nav>
 

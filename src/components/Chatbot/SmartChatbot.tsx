@@ -131,6 +131,7 @@ const SmartChatbot = () => {
 
       {/* FAB */}
       <button onClick={()=>setIsOpen(!isOpen)}
+        data-chatbot-fab
         style={{ width:50, height:50, borderRadius:'50%', background:'#111827', border:'2px solid #10B981', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 4px 20px rgba(17,24,39,0.25)', transition:'all 0.2s' }}
         onMouseEnter={e=>{ e.currentTarget.style.transform='scale(1.08)'; e.currentTarget.style.background='#10B981'; }}
         onMouseLeave={e=>{ e.currentTarget.style.transform='scale(1)'; e.currentTarget.style.background='#111827'; }}>
