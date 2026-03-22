@@ -1,10 +1,34 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Loader2, ShieldCheck, Lock, Eye, EyeOff, Fingerprint, Zap, Users, BookOpen } from 'lucide-react';
+import { Loader2, ShieldCheck, Lock, Eye, EyeOff, Zap, ArrowLeft } from 'lucide-react';
 import api from '../services/api';
 
 // ── Sanitize input (XSS prevention) ──
 const sanitize = (v: string) => v.replace(/[<>"'`]/g, '');
+
+// ── Stitch "Academic Sentinel" Design Tokens ──────────────────────────────────
+const DS = {
+  bg:            '#F8F9FA',
+  surface:       '#FFFFFF',
+  surfaceLow:    '#F3F4F5',
+  surfaceHigh:   '#E1E3E4',
+  blue:          '#1A73E8',
+  blueDark:      '#005BBF',
+  blueLight:     '#EBF3FD',
+  blueMid:       '#D8E2FF',
+  text:          '#111827',
+  textMuted:     '#414754',
+  textFaint:     '#727785',
+  green:         '#1B6B3A',
+  greenLight:    '#D9F0E3',
+  red:           '#B91C1C',
+  redLight:      '#FEF2F2',
+  shadowAmbient: '0 20px 40px rgba(44,47,49,0.06)',
+  radiusCard:    '20px',
+  radiusBtn:     '12px',
+  radiusMd:      '10px',
+  radiusSm:      '8px',
+};
 
 const LoginPage = () => {
   const [isLogin, setIsLogin]     = useState(true);
@@ -51,187 +75,136 @@ const LoginPage = () => {
     } finally { setIsLoading(false); }
   };
 
-  const inputBase: React.CSSProperties = {
-    width: '100%', height: 46, padding: '0 14px', border: '1.5px solid var(--border)',
-    borderRadius: 10, background: 'var(--surface-low)', color: 'var(--text)',
-    fontSize: 13.5, outline: 'none', fontFamily: 'inherit',
+  // ── Stitch Elegant Input Styles ──
+  const fieldStyle: React.CSSProperties = {
+    width: '100%', padding: '14px 16px', borderRadius: DS.radiusMd,
+    background: DS.surfaceHigh, border: 'none', outline: 'none',
+    fontSize: 14, color: DS.text, fontFamily: "'Inter', sans-serif",
+    transition: 'all 0.2s',
   };
 
-  const features = [
-    { icon: <Zap size={15} />, title: 'Real-time Tracking', desc: 'Follow every status change live.' },
-    { icon: <ShieldCheck size={15} />, title: 'Privacy-First Anonymity', desc: 'Identity hidden from unauthorized viewers.' },
-    { icon: <Users size={15} />, title: 'Multi-Role Portals', desc: 'Student · Faculty · Warden · Dean · Admin.' },
-    { icon: <BookOpen size={15} />, title: 'AI-Powered Routing', desc: 'Smart case assignment with ML insights.' },
-  ];
+  const onFocus = (e: any) => {
+    e.target.style.background = '#F0F5FF';
+    e.target.style.boxShadow  = `inset 0 -2px 0 ${DS.blue}`;
+  };
+  const onBlur = (e: any) => {
+    e.target.style.background = DS.surfaceHigh;
+    e.target.style.boxShadow  = 'none';
+  };
 
   return (
-    <div style={{ minHeight: '100svh', width: '100%', display: 'flex', fontFamily: 'Inter, system-ui, sans-serif' }}>
+    <div style={{ backgroundColor: DS.bg, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', fontFamily: "'Inter', sans-serif" }}>
+      {/* Google Fonts */}
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600&display=swap');`}</style>
+      
+      {/* Subtle background glow */}
+      <div style={{ position: 'absolute', top: '20%', left: '50%', transform: 'translate(-50%, -50%)', width: 600, height: 600, background: DS.blueLight, filter: 'blur(100px)', zIndex: 0, borderRadius: '50%', opacity: 0.7 }} />
 
-      {/* ── Left Brand Panel ── */}
-      <div style={{
-        width: '44%', flexShrink: 0, background: '#111827',
-        display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-        padding: '44px 48px',
-      }} className="hidden lg:flex">
-        {/* Logo */}
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 56 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, background: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <ShieldCheck size={20} color="#fff" />
-            </div>
-            <div>
-              <p style={{ fontSize: 17, fontWeight: 700, color: '#fff', lineHeight: 1 }}>E-Grievance</p>
-              <p style={{ fontSize: 10, fontWeight: 600, color: '#10B981', letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: 3 }}>Decision Support System</p>
-            </div>
+      {/* Top Left Back Button */}
+      <Link to="/" style={{ position: 'absolute', top: 32, left: 32, display: 'flex', alignItems: 'center', gap: 8, color: DS.textMuted, textDecoration: 'none', fontWeight: 600, fontSize: 14, zIndex: 10 }}>
+        <ArrowLeft size={16} /> Back to Home
+      </Link>
+
+      <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 440, padding: 24 }}>
+        
+        {/* Brand Header */}
+        <div style={{ textAlign: 'center', marginBottom: 32 }}>
+          <div style={{ display: 'inline-flex', background: DS.blue, padding: 12, borderRadius: 14, marginBottom: 16 }}>
+            <Zap size={28} color="#FFF" fill="#FFF" />
           </div>
-
-          <h1 style={{ fontSize: 38, fontWeight: 800, color: '#F9FAFB', lineHeight: 1.15, letterSpacing: '-0.02em', marginBottom: 14 }}>
-            AI-Based<br />E-Grievance<br />Decision Support
+          <h1 style={{ fontFamily: "'Manrope', sans-serif", fontWeight: 800, fontSize: 28, color: DS.text, letterSpacing: '-0.02em', marginBottom: 8 }}>
+            VoltGrievance
           </h1>
-          <p style={{ fontSize: 14, color: '#6B7280', lineHeight: 1.7, marginBottom: 44 }}>
-            A secure, privacy-preserving platform for raising, routing, and resolving institutional grievances — intelligently.
+          <p style={{ color: DS.textMuted, fontSize: 14.5 }}>
+            Academic resolution, illuminated.
           </p>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
-            {features.map((f, i) => (
-              <div key={i} style={{ display: 'flex', gap: 14 }}>
-                <div style={{ width: 34, height: 34, borderRadius: 9, background: 'rgba(16,185,129,0.12)', color: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  {f.icon}
-                </div>
-                <div>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: '#E5E7EB', marginBottom: 2 }}>{f.title}</p>
-                  <p style={{ fontSize: 12, color: '#6B7280', lineHeight: 1.5 }}>{f.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
 
-        {/* Security badge */}
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px', borderRadius: 10, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.15)', marginBottom: 16 }}>
-            <Lock size={13} style={{ color: '#10B981' }} />
-            <p style={{ fontSize: 11, fontWeight: 600, color: '#10B981' }}>Secured with AES-256 Encryption · JWT Auth</p>
-          </div>
-          <p style={{ fontSize: 11, color: '#374151' }}>Official Grievance Redressal System · Academic Year 2024–2025</p>
-        </div>
-      </div>
-
-      {/* ── Right Form Panel ── */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', background: '#FFFFFF', padding: '48px 32px' }}>
-        {/* Mobile logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 32 }} className="lg:hidden">
-          <div style={{ width: 32, height: 32, borderRadius: 9, background: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <ShieldCheck size={16} color="#fff" />
-          </div>
-          <p style={{ fontSize: 16, fontWeight: 700, color: '#111827' }}>E-Grievance DSS</p>
-        </div>
-
-        <div style={{ width: '100%', maxWidth: 400 }}>
-          {/* Toggle */}
-          <div style={{ display: 'flex', background: '#F3F4F6', borderRadius: 12, padding: 4, marginBottom: 28 }}>
-            {['Sign In', 'Sign Up'].map((t, i) => (
-              <button key={t} type="button" onClick={() => { setIsLogin(i === 0); setErrorMsg(''); }}
-                style={{
-                  flex: 1, padding: '8px', borderRadius: 9, fontSize: 13.5, fontWeight: 600,
-                  border: 'none', cursor: 'pointer', transition: 'all 0.18s',
-                  background: (isLogin ? i === 0 : i === 1) ? '#FFFFFF' : 'transparent',
-                  color: (isLogin ? i === 0 : i === 1) ? '#111827' : '#6B7280',
-                  boxShadow: (isLogin ? i === 0 : i === 1) ? '0 1px 4px rgba(0,0,0,0.1)' : 'none',
-                }}>
-                {t}
-              </button>
-            ))}
-          </div>
-
-          <h2 style={{ fontSize: 24, fontWeight: 800, color: '#111827', marginBottom: 4, letterSpacing: '-0.01em' }}>
-            {isLogin ? 'Welcome back' : 'Create account'}
+        {/* Form Card */}
+        <div style={{ background: DS.surface, padding: 40, borderRadius: DS.radiusCard, boxShadow: DS.shadowAmbient, border: '1px solid rgba(255,255,255,0.8)' }}>
+          
+          <h2 style={{ fontFamily: "'Manrope', sans-serif", fontWeight: 800, fontSize: 22, color: DS.text, letterSpacing: '-0.01em', marginBottom: 24 }}>
+            {isLogin ? 'Sign in to portal' : 'Create an account'}
           </h2>
-          <p style={{ fontSize: 13, color: '#6B7280', marginBottom: 24 }}>
-            {isLogin ? 'Sign in to your secure portal.' : 'Join the E-Grievance platform.'}
-          </p>
 
-          {/* Error */}
+          {/* Toggle Login/Register */}
+          <div style={{ display: 'flex', background: DS.surfaceLow, borderRadius: DS.radiusBtn, padding: 4, marginBottom: 24 }}>
+            <button onClick={() => { setIsLogin(true); setErrorMsg(''); }} style={{ flex: 1, padding: '10px 0', borderRadius: 8, fontSize: 13.5, fontWeight: 600, border: 'none', cursor: 'pointer', background: isLogin ? DS.surface : 'transparent', color: isLogin ? DS.text : DS.textFaint, boxShadow: isLogin ? '0 2px 8px rgba(0,0,0,0.04)' : 'none', transition: 'all 0.2s' }}>
+              Sign In
+            </button>
+            <button onClick={() => { setIsLogin(false); setErrorMsg(''); }} style={{ flex: 1, padding: '10px 0', borderRadius: 8, fontSize: 13.5, fontWeight: 600, border: 'none', cursor: 'pointer', background: !isLogin ? DS.surface : 'transparent', color: !isLogin ? DS.text : DS.textFaint, boxShadow: !isLogin ? '0 2px 8px rgba(0,0,0,0.04)' : 'none', transition: 'all 0.2s' }}>
+              Sign Up
+            </button>
+          </div>
+
           {errorMsg && (
-            <div style={{ padding: '10px 14px', borderRadius: 10, background: '#FEF2F2', color: '#DC2626', fontSize: 12.5, fontWeight: 500, marginBottom: 16, display: 'flex', gap: 8, alignItems: 'flex-start', border: '1px solid #FEE2E2' }}>
-              <span style={{ fontSize: 14 }}>⚠️</span> {errorMsg}
+            <div style={{ padding: '12px 16px', background: DS.redLight, borderLeft: `3px solid ${DS.red}`, borderRadius: DS.radiusSm, color: DS.red, fontSize: 13, fontWeight: 500, marginBottom: 24, display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ fontSize: 16 }}>⚠</span> {errorMsg}
             </div>
           )}
 
-          {/* Lockout */}
-          {LOCKED && (
-            <div style={{ padding: '10px 14px', borderRadius: 10, background: '#111827', color: '#fff', fontSize: 12, marginBottom: 16 }}>
-              🔒 Too many failed attempts. Please wait 5 minutes or reset your password.
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            
             {!isLogin && (
               <div>
-                <label style={{ display: 'block', fontSize: 12.5, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Full Name</label>
-                <input type="text" value={name} onChange={e => setName(e.target.value)} required placeholder="John Doe" style={inputBase}
-                  onFocus={e => { e.target.style.borderColor = '#10B981'; e.target.style.background = '#fff'; }}
-                  onBlur={e => { e.target.style.borderColor = 'var(--border)'; e.target.style.background = 'var(--surface-low)'; }} />
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: DS.textMuted, marginBottom: 6 }}>Full Name</label>
+                <input required type="text" placeholder="John Doe" value={name} onChange={e => setName(e.target.value)} style={fieldStyle} onFocus={onFocus} onBlur={onBlur} disabled={isLoading || LOCKED} />
               </div>
             )}
 
             <div>
-              <label style={{ fontSize: 12.5, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 6 }}>University Email</label>
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="name@university.edu" style={inputBase}
-                onFocus={e => { e.target.style.borderColor = '#10B981'; e.target.style.background = '#fff'; }}
-                onBlur={e => { e.target.style.borderColor = 'var(--border)'; e.target.style.background = 'var(--surface-low)'; }} />
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: DS.textMuted, marginBottom: 6 }}>University Email</label>
+              <input required type="email" placeholder="student@university.edu" value={email} onChange={e => setEmail(e.target.value)} style={fieldStyle} onFocus={onFocus} onBlur={onBlur} disabled={isLoading || LOCKED} />
             </div>
 
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                <label style={{ fontSize: 12.5, fontWeight: 600, color: '#374151' }}>Password</label>
-                {isLogin && <button type="button" style={{ fontSize: 11.5, color: '#10B981', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}>Forgot password?</button>}
-              </div>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: DS.textMuted, marginBottom: 6 }}>Password</label>
               <div style={{ position: 'relative' }}>
-                <input type={showPwd ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} required placeholder="••••••••"
-                  style={{ ...inputBase, paddingRight: 44 }}
-                  onFocus={e => { e.target.style.borderColor = '#10B981'; e.target.style.background = '#fff'; }}
-                  onBlur={e => { e.target.style.borderColor = 'var(--border)'; e.target.style.background = 'var(--surface-low)'; }} />
-                <button type="button" onClick={() => setShowPwd(!showPwd)}
-                  style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#9CA3AF' }}>
-                  {showPwd ? <EyeOff size={16} /> : <Eye size={16} />}
+                <input required type={showPwd ? 'text' : 'password'} placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} style={{ ...fieldStyle, paddingRight: 44 }} onFocus={onFocus} onBlur={onBlur} disabled={isLoading || LOCKED} />
+                <button type="button" onClick={() => setShowPwd(!showPwd)} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: DS.textFaint }}>
+                  {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 6 }}>
-                <Lock size={10} style={{ color: '#10B981' }} />
-                <p style={{ fontSize: 11, color: '#10B981', fontWeight: 500 }}>End-to-end encrypted connection</p>
+            </div>
+
+            {/* Role Selection */}
+            <div>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: DS.textMuted, marginBottom: 8 }}>Access Role</label>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {['Student', 'Faculty', 'Warden', 'Dean', 'Admin'].map(r => (
+                  <button key={r} type="button" onClick={() => setRole(r)} disabled={isLoading || LOCKED}
+                    style={{
+                      padding: '8px 16px', borderRadius: 40, fontSize: 12, fontWeight: 600, cursor: 'pointer', border: 'none',
+                      background: role === r ? DS.blueLight : DS.surfaceLow,
+                      color: role === r ? DS.blueDark : DS.textFaint,
+                      boxShadow: role === r ? `inset 0 0 0 1px ${DS.blue}` : 'none',
+                      transition: 'all 0.2s'
+                    }}>
+                    {r}
+                  </button>
+                ))}
               </div>
             </div>
 
-            <div>
-              <label style={{ fontSize: 12.5, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 6 }}>Your Role</label>
-              <select value={role} onChange={e => setRole(e.target.value)} style={{ ...inputBase, cursor: 'pointer' }}
-                onFocus={e => { e.target.style.borderColor = '#10B981'; e.target.style.background = '#fff'; }}
-                onBlur={e => { e.target.style.borderColor = 'var(--border)'; e.target.style.background = 'var(--surface-low)'; }}>
-                <option>Student</option>
-                <option>Faculty</option>
-                <option>Warden</option>
-                <option>Dean</option>
-                <option>Admin</option>
-              </select>
-            </div>
-
-            <button type="submit" disabled={isLoading || LOCKED} className="btn-em"
-              style={{ width: '100%', height: 46, marginTop: 4, fontSize: 14, borderRadius: 10, opacity: (isLoading || LOCKED) ? 0.6 : 1, cursor: (isLoading || LOCKED) ? 'not-allowed' : 'pointer' }}>
-              {isLoading ? <><Loader2 size={16} className="animate-spin" /> Authenticating...</> : <><Fingerprint size={16} />{isLogin ? 'Login Securely' : 'Create Account'}</>}
+            <button type="submit" disabled={isLoading || LOCKED} 
+              style={{
+                background: `linear-gradient(135deg, ${DS.blue}, ${DS.blueDark})`,
+                color: '#FFF', fontWeight: 600, padding: '16px', borderRadius: DS.radiusBtn,
+                fontSize: 15, border: 'none', cursor: (isLoading || LOCKED) ? 'not-allowed' : 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+                boxShadow: '0 4px 14px rgba(26,115,232,0.3)', marginTop: 8,
+                opacity: (isLoading || LOCKED) ? 0.7 : 1, transition: 'all 0.2s'
+            }}>
+              {isLoading ? <Loader2 size={18} className="animate-spin" /> : <Lock size={18} />}
+              {isLogin ? 'Login Securely' : 'Create Account'}
             </button>
           </form>
 
-          <p style={{ textAlign: 'center', fontSize: 12.5, color: '#6B7280', marginTop: 20 }}>
-            {isLogin ? "Don't have an account?" : 'Already registered?'}{' '}
-            <button type="button" onClick={() => { setIsLogin(!isLogin); setErrorMsg(''); }}
-              style={{ color: '#10B981', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer' }}>
-              {isLogin ? 'Sign Up' : 'Sign In'}
-            </button>
-          </p>
-          <p style={{ textAlign: 'center', marginTop: 16 }}>
-            <Link to="/" style={{ fontSize: 11.5, color: '#9CA3AF' }}>← Back to home</Link>
-          </p>
+        </div>
+        
+        <div style={{ textAlign: 'center', marginTop: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+          <ShieldCheck size={16} color={DS.green} />
+          <span style={{ fontSize: 12.5, color: DS.textFaint, fontWeight: 500 }}>Protected by VoltGrievance Zero-Knowledge Protocol</span>
         </div>
       </div>
     </div>

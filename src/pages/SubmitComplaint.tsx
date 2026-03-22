@@ -1,31 +1,28 @@
 import { useState, useEffect } from 'react';
-import { UploadCloud, Lock, Zap, ShieldCheck, Lightbulb, Loader2 } from 'lucide-react';
+import { UploadCloud, Lock, Zap, ShieldCheck, Lightbulb, Loader2, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
-// ── Stitch "Academic Sentinel" Design Tokens ──────────────────────────────────
+// ── Stitch "Blue Sentinel" Design Tokens (Student Specific) ──────────────────
 const DS = {
-  bg:            '#F9FAFB',
+  bg:            '#F8F9FA',
   surface:       '#FFFFFF',
-  surfaceLow:    '#F3F4F5',
-  surfaceHigh:   '#E1E3E4',
   blue:          '#1A73E8',
   blueDark:      '#005BBF',
   blueLight:     '#EBF3FD',
   blueMid:       '#D8E2FF',
-  text:          '#191C1D',
+  text:          '#111827',
   textMuted:     '#414754',
   textFaint:     '#727785',
+  green:         '#10B981',
+  greenLight:    '#ECFDF5',
   amber:         '#9E4300',
   amberLight:    '#FFDBCB',
-  green:         '#1B6B3A',
-  greenLight:    '#D9F0E3',
-  // shadows — Stitch academic ambient (not dark smudge)
-  shadow:        '0 4px 24px rgba(44,47,49,0.06)',
-  shadowFocus:   '0 8px 32px rgba(26,115,232,0.10)',
-  radius:        '16px',
-  radiusMd:      '10px',
-  radiusSm:      '8px',
+  red:           '#B91C1C',
+  redLight:      '#FEF2F2',
+  shadowAmbient: '0 20px 40px rgba(44,47,49,0.06)',
+  radiusCard:    '24px',
+  radiusBtn:     '14px',
 };
 
 const CATEGORIES = [
@@ -37,13 +34,12 @@ const PRIORITIES = ['Low', 'Medium', 'High', 'Critical'] as const;
 type Priority = typeof PRIORITIES[number];
 
 const PRIORITY_COLORS: Record<Priority, { active: string; text: string }> = {
-  Low:      { active: '#1A73E8', text: '#FFFFFF' },
-  Medium:   { active: '#1B6B3A', text: '#FFFFFF' },
-  High:     { active: '#9E4300', text: '#FFFFFF' },
-  Critical: { active: '#B91C1C', text: '#FFFFFF' },
+  Low:      { active: DS.blue,    text: '#FFFFFF' },
+  Medium:   { active: DS.green,   text: '#FFFFFF' },
+  High:     { active: DS.amber,   text: '#FFFFFF' },
+  Critical: { active: DS.red,     text: '#FFFFFF' },
 };
 
-// AI category predictor (frontend heuristic — matches backend eventually)
 const predictCategory = (desc: string): { category: string; assignedTo: string; resolution: string } | null => {
   const d = desc.toLowerCase();
   if (d.length < 15) return null;
@@ -91,355 +87,222 @@ const SubmitComplaint = () => {
       setSubmitSuccess(true);
       setTimeout(() => navigate('/dashboard/list'), 1500);
     } catch (err: any) {
-      const msg = err?.response?.data?.message || err?.message || 'Server unavailable. Please try again or contact support.';
+      const msg = err?.response?.data?.message || err?.message || 'Server unavailable.';
       setSubmitError(msg);
     } finally { setIsSubmitting(false); }
   };
 
-  // ── Field style (Stitch Elegant Input) ─────────────────────────────────────
-  const fieldStyle: React.CSSProperties = {
-    width: '100%',
-    padding: '12px 16px',
-    borderRadius: DS.radiusMd,
-    background: DS.surfaceHigh,
-    border: 'none',
-    outline: 'none',
-    fontSize: 13.5,
-    color: DS.text,
-    fontFamily: "'Inter', sans-serif",
-    transition: 'background 0.2s, box-shadow 0.2s',
+  const cardStyle = {
+    background: DS.surface, borderRadius: DS.radiusCard, padding: 40,
+    boxShadow: DS.shadowAmbient, border: '1px solid rgba(255,255,255,0.8)',
   };
-
-  const onFocus = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    e.target.style.background = '#F0F5FF';
-    e.target.style.boxShadow  = `inset 0 -2px 0 ${DS.blue}`;
-  };
-  const onBlur = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    e.target.style.background = DS.surfaceHigh;
-    e.target.style.boxShadow  = 'none';
-  };
-
-  const Label = ({ children }: { children: React.ReactNode }) => (
-    <p style={{ fontSize: 11.5, fontWeight: 600, color: DS.textMuted, marginBottom: 7, letterSpacing: '0.02em', fontFamily: "'Inter', sans-serif" }}>
-      {children}
-    </p>
-  );
 
   return (
-    <div style={{ padding: '32px 36px', minHeight: '100vh', background: DS.bg, fontFamily: "'Inter', sans-serif" }}>
-      {/* Google Fonts */}
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600&display=swap');`}</style>
-
-      {/* Page Header */}
-      <div style={{ marginBottom: 28 }}>
-        <p style={{ fontSize: 11, fontWeight: 700, color: DS.blue, letterSpacing: '0.09em', textTransform: 'uppercase', marginBottom: 5, fontFamily: "'Inter', sans-serif" }}>
-          New Grievance
-        </p>
-        <h1 style={{ fontSize: 26, fontWeight: 800, color: DS.text, letterSpacing: '-0.02em', fontFamily: "'Manrope', sans-serif", lineHeight: 1.2 }}>
-          Submit Your Complaint
+    <div style={{ padding: '48px', minHeight: '100vh', background: DS.bg, fontFamily: "'Inter', sans-serif" }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap');`}</style>
+      
+      {/* Header */}
+      <div style={{ marginBottom: 40 }}>
+        <div style={{ display:'inline-flex', alignItems:'center', gap:6, background:DS.blueLight, padding:'4px 12px', borderRadius:20, marginBottom:16 }}>
+          <span style={{ width:6, height:6, borderRadius:'50%', background:DS.blue }} />
+          <span style={{ fontSize:11, fontWeight:700, color:DS.blueDark, letterSpacing:'0.06em', textTransform:'uppercase' }}>Grievance Module</span>
+        </div>
+        <h1 style={{ fontFamily: "'Manrope', sans-serif", fontSize: 36, fontWeight: 800, color: DS.text, letterSpacing: '-0.02em', margin: 0 }}>
+          Submit Your Grievance
         </h1>
-        <p style={{ fontSize: 13, color: DS.textMuted, marginTop: 5, fontFamily: "'Inter', sans-serif" }}>
-          Your identity is protected. AI routes your issue to the right authority automatically.
-        </p>
+        <p style={{ fontSize: 16, color: DS.textMuted, marginTop: 12 }}>Your secure, anonymous portal to communicate issues to the institutional board.</p>
       </div>
 
-      {/* Two column layout — 8/4 */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: 24, alignItems: 'flex-start' }}>
-
-        {/* ── LEFT: Main Form Card ─────────────────────────────────────────── */}
-        <form onSubmit={handleSubmit}>
-          <div style={{
-            background: DS.surface, borderRadius: DS.radius,
-            boxShadow: DS.shadow, padding: '32px 36px',
-            display: 'flex', flexDirection: 'column', gap: 22,
-          }}>
-
-            {/* Card label */}
-            <div>
-              <p style={{ fontSize: 10.5, fontWeight: 700, color: DS.blue, letterSpacing: '0.09em', textTransform: 'uppercase', fontFamily: "'Inter', sans-serif" }}>
-                FILE A GRIEVANCE
-              </p>
+      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 32, alignItems: 'start' }}>
+        
+        {/* Main Form Section */}
+        <div style={cardStyle}>
+          {submitSuccess && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px 20px', borderRadius: 16, background: DS.greenLight, marginBottom: 24, border: `1px solid ${DS.green}20` }}>
+              <ShieldCheck size={20} style={{ color: DS.green }} />
+              <p style={{ fontSize: 14, fontWeight: 600, color: DS.green }}>Complaint submitted successfully. Redirecting you...</p>
             </div>
+          )}
 
-            {/* Success banner */}
-            {submitSuccess && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', borderRadius: DS.radiusSm, background: '#D9F0E3', borderLeft: '3px solid #1B6B3A' }}>
-                <ShieldCheck size={15} style={{ color: '#1B6B3A', flexShrink: 0 }} />
-                <p style={{ fontSize: 13, fontWeight: 600, color: '#1B6B3A', fontFamily: "'Inter', sans-serif" }}>
-                  ✓ Complaint submitted successfully! Redirecting...
-                </p>
-              </div>
-            )}
-
-            {/* Error banner */}
-            {submitError && (
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '12px 16px', borderRadius: DS.radiusSm, background: '#FEF2F2', borderLeft: '3px solid #B91C1C' }}>
-                <span style={{ fontSize: 16, flexShrink: 0 }}>⚠</span>
-                <div>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: '#B91C1C', marginBottom: 2, fontFamily: "'Inter', sans-serif" }}>Submission Failed</p>
-                  <p style={{ fontSize: 12, color: '#991B1B', fontFamily: "'Inter', sans-serif" }}>{submitError}</p>
-                </div>
-              </div>
-            )}
-
-            {/* 1. Category dropdown */}
-            <div>
-              <Label>Complaint Category</Label>
-              <select
-                value={category}
-                onChange={e => setCategory(e.target.value)}
-                style={{ ...fieldStyle, cursor: 'pointer', appearance: 'auto' }}
-                onFocus={onFocus as any}
-                onBlur={onBlur as any}
-              >
-                <option value="">Select category (or let AI decide)...</option>
-                {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
-              {prediction && !category && (
-                <p style={{ fontSize: 11.5, color: DS.blue, marginTop: 5, fontFamily: "'Inter', sans-serif" }}>
-                  💡 AI suggests: <strong>{prediction.category}</strong>
-                </p>
-              )}
-            </div>
-
-            {/* 2. Priority pill-toggle */}
-            <div>
-              <Label>Priority Level</Label>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' as const }}>
-                {PRIORITIES.map(p => {
-                  const isActive = priority === p;
-                  const pc = PRIORITY_COLORS[p];
-                  return (
-                    <button
-                      key={p}
-                      type="button"
-                      onClick={() => setPriority(p)}
-                      style={{
-                        padding: '7px 20px', borderRadius: 99, border: 'none', cursor: 'pointer',
-                        fontSize: 12.5, fontWeight: 600, transition: 'all 0.18s',
-                        background: isActive ? pc.active : DS.surfaceHigh,
-                        color: isActive ? pc.text : DS.textMuted,
-                        boxShadow: isActive ? `0 2px 10px ${pc.active}40` : 'none',
-                        fontFamily: "'Inter', sans-serif",
-                      }}>
-                      {p}
-                    </button>
-                  );
-                })}
+          {submitError && (
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '16px 20px', borderRadius: 16, background: DS.redLight, marginBottom: 24, border: `1px solid ${DS.red}20` }}>
+              <Lock size={18} style={{ color: DS.red, marginTop: 2 }} />
+              <div>
+                <p style={{ fontSize: 14, fontWeight: 700, color: DS.red }}>Submission Failed</p>
+                <p style={{ fontSize: 13, color: DS.red, opacity: 0.8, marginTop: 2 }}>{submitError}</p>
               </div>
             </div>
+          )}
 
-            {/* 3. Description textarea */}
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+            
+            {/* Description Section */}
             <div>
-              <Label>Describe Your Grievance <span style={{ color: '#B91C1C' }}>*</span></Label>
+              <p style={{ fontFamily: "'Manrope', sans-serif", fontSize: 18, fontWeight: 800, color: DS.text, marginBottom: 12 }}>Issue Description</p>
               <textarea
-                rows={6}
-                required
                 value={desc}
                 onChange={e => setDesc(e.target.value)}
-                placeholder="Describe the issue in detail — include dates, locations, and any relevant people involved. The more specific you are, the faster your grievance gets resolved."
-                style={{ ...fieldStyle, resize: 'vertical' }}
-                onFocus={onFocus as any}
-                onBlur={onBlur as any}
+                placeholder="Describe your grievance in detail... (Min 10 characters)"
+                style={{
+                  width: '100%', minHeight: 180, padding: '20px', borderRadius: 20, 
+                  background: DS.bg, border: '2px solid transparent', outline: 'none',
+                  fontSize: 15, color: DS.text, fontFamily: 'inherit', lineHeight: 1.6,
+                  transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
+                }}
+                onFocus={e => { e.target.style.background = '#fff'; e.target.style.borderColor = DS.blue; e.target.style.boxShadow = `0 12px 24px ${DS.blue}10`; }}
+                onBlur={e => { e.target.style.background = DS.bg; e.target.style.borderColor = 'transparent'; e.target.style.boxShadow = 'none'; }}
               />
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5 }}>
-                <p style={{ fontSize: 11, color: desc.length < 10 && desc.length > 0 ? '#B91C1C' : DS.textFaint }}>
-                  {desc.length < 10 && desc.length > 0 ? 'Minimum 10 characters required' : ''}
-                </p>
-                <p style={{ fontSize: 11, color: desc.length > 1800 ? '#B91C1C' : DS.textFaint }}>
-                  {desc.length} / 2000
-                </p>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
+                <span style={{ fontSize: 12, fontWeight: 600, color: desc.length < 10 ? DS.red : DS.textFaint }}>{desc.length} / 2000 characters</span>
               </div>
             </div>
 
-            {/* 4. File upload — ghost dashed border (Stitch "ghost border" exception) */}
-            <div>
-              <Label>Attach Evidence <span style={{ fontWeight: 400 }}>(Optional)</span></Label>
-              <label
-                style={{
-                  display: 'flex', flexDirection: 'column', alignItems: 'center',
-                  justifyContent: 'center', gap: 8, padding: '28px 20px',
-                  borderRadius: DS.radiusMd, cursor: 'pointer', transition: 'all 0.2s',
-                  border: `1.5px dashed rgba(193,198,214,0.5)`, /* Stitch ghost border */
-                  background: DS.surfaceLow,
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.background = DS.blueLight;
-                  e.currentTarget.style.borderColor = `rgba(26,115,232,0.3)`;
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.background = DS.surfaceLow;
-                  e.currentTarget.style.borderColor = `rgba(193,198,214,0.5)`;
+            {/* Config Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+              <div>
+                <p style={{ fontFamily: "'Manrope', sans-serif", fontSize: 13, fontWeight: 800, color: DS.text, marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Category</p>
+                <select 
+                  value={category} 
+                  onChange={e => setCategory(e.target.value)} 
+                  style={{ width: '100%', padding: '14px 18px', borderRadius: 12, border: 'none', background: DS.bg, fontSize: 14, fontWeight: 600, color: DS.text, outline: 'none' }}
+                >
+                  <option value="">{prediction ? `Suggested: ${prediction.category}` : "Select Category"}</option>
+                  {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              
+              <div>
+                <p style={{ fontFamily: "'Manrope', sans-serif", fontSize: 13, fontWeight: 800, color: DS.text, marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Priority</p>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  {PRIORITIES.map(p => (
+                    <button 
+                      key={p} type="button" onClick={() => setPriority(p)}
+                      style={{ 
+                        flex: 1, padding: '12px 0', borderRadius: 10, border: 'none', cursor: 'pointer',
+                        fontSize: 12, fontWeight: 700, 
+                        background: priority === p ? PRIORITY_COLORS[p].active : DS.bg,
+                        color: priority === p ? '#fff' : DS.textMuted,
+                        transition: 'all 0.2s'
+                      }}
+                    >{p}</button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Anonymous Toggle */}
+            <div style={{ padding: '20px 24px', borderRadius: 20, background: DS.blue + '08', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <div style={{ width: 44, height: 44, borderRadius: 12, background: DS.surface, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+                  <Lock size={20} style={{ color: DS.blue }} />
+                </div>
+                <div>
+                  <p style={{ fontSize: 15, fontWeight: 700, color: DS.text }}>Identity Masking</p>
+                  <p style={{ fontSize: 13, color: DS.textMuted, marginTop: 2 }}>Enabled: Investigators see a tracking ID only.</p>
+                </div>
+              </div>
+              <button
+                type="button" onClick={() => setAnon(!anon)}
+                style={{ 
+                  width: 56, height: 28, borderRadius: 28, background: anon ? DS.blue : DS.textFaint, border: 'none', 
+                  cursor: 'pointer', position: 'relative', transition: 'background 0.3s'
                 }}
               >
-                <UploadCloud size={22} style={{ color: DS.textFaint }} />
-                <div style={{ textAlign: 'center' }}>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: DS.textMuted }}>Click to upload or drag & drop</p>
-                  <p style={{ fontSize: 11.5, color: DS.textFaint, marginTop: 3 }}>PDF, JPG, PNG — max 10 MB</p>
-                </div>
-                <input type="file" style={{ display: 'none' }} accept=".pdf,.jpg,.jpeg,.png" />
-              </label>
-            </div>
-
-            {/* 5. Anonymous Mode toggle */}
-            <div style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              padding: '14px 18px', borderRadius: DS.radiusMd, background: DS.surfaceLow,
-            }}>
-              <div style={{ flex: 1, marginRight: 16 }}>
-                <p style={{ fontSize: 13.5, fontWeight: 600, color: DS.text, marginBottom: 3, fontFamily: "'Inter', sans-serif" }}>
-                  Anonymous Mode
-                </p>
-                <p style={{ fontSize: 11.5, color: DS.textMuted, lineHeight: 1.5 }}>
-                  Your identity will be masked from handling staff. Dean/Admin can see it for investigation.
-                </p>
-              </div>
-              {/* Toggle switch */}
-              <button
-                type="button"
-                role="switch"
-                aria-checked={anon}
-                onClick={() => setAnon(!anon)}
-                style={{
-                  width: 44, height: 24, borderRadius: 99, border: 'none', cursor: 'pointer',
-                  background: anon ? DS.blue : DS.surfaceHigh,
-                  position: 'relative', flexShrink: 0, transition: 'background 0.2s',
-                }}>
-                <span style={{
-                  position: 'absolute', top: 3, left: anon ? 22 : 3,
-                  width: 18, height: 18, borderRadius: '50%', background: '#FFFFFF',
-                  transition: 'left 0.2s', boxShadow: '0 1px 4px rgba(0,0,0,0.18)',
-                }} />
+                <div style={{ position: 'absolute', top: 4, left: anon ? 32 : 4, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'left 0.3s cubic-bezier(0.16, 1, 0.3, 1)' }} />
               </button>
             </div>
 
-            {/* Submit button — Stitch gradient CTA */}
             <button
-              type="submit"
-              disabled={isSubmitting || desc.length < 10}
+              type="submit" disabled={isSubmitting || desc.length < 10}
               style={{
-                width: '100%', padding: '15px 24px', borderRadius: DS.radiusMd, border: 'none',
-                background: `linear-gradient(135deg, ${DS.blue}, ${DS.blueDark})`,
-                color: '#FFFFFF', fontSize: 15, fontWeight: 700,
-                cursor: (isSubmitting || desc.length < 10) ? 'not-allowed' : 'pointer',
-                opacity: (isSubmitting || desc.length < 10) ? 0.65 : 1,
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9,
-                fontFamily: "'Manrope', sans-serif", letterSpacing: '0.01em',
-                transition: 'all 0.2s', boxShadow: `0 4px 16px ${DS.blue}40`,
+                width: '100%', padding: '20px', borderRadius: 18, border: 'none',
+                background: isSubmitting ? DS.textMuted : DS.blue, color: '#fff',
+                fontSize: 16, fontWeight: 800, fontFamily: "'Manrope', sans-serif",
+                cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
+                boxShadow: `0 12px 32px ${DS.blue}30`, transition: 'all 0.2s'
               }}
-              onMouseEnter={e => { if (!isSubmitting) e.currentTarget.style.boxShadow = `0 6px 24px ${DS.blue}60`; }}
-              onMouseLeave={e => { e.currentTarget.style.boxShadow = `0 4px 16px ${DS.blue}40`; }}
+              onMouseEnter={e => { if (!isSubmitting) e.currentTarget.style.transform = 'translateY(-2px)' }}
+              onMouseLeave={e => { if (!isSubmitting) e.currentTarget.style.transform = 'none' }}
             >
-              {isSubmitting
-                ? <><Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> Submitting...</>
-                : <><Lock size={15} /> Submit Grievance Securely →</>}
+              {isSubmitting ? <Loader2 size={20} style={{ animation: 'spin 1.5s linear infinite' }} /> : <Zap size={18} fill="#fff" />}
+              {isSubmitting ? 'SECURELY SUBMITTING...' : 'SECURELY SUBMIT GRIEVANCE'}
+              {!isSubmitting && <ArrowRight size={18} />}
             </button>
-          </div>
-        </form>
 
-        {/* ── RIGHT: Sidebar cards ─────────────────────────────────────────── */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          </form>
+        </div>
 
-          {/* AI Routing Preview — Stitch AI signature: blue left border */}
-          <div style={{
-            background: DS.surface, borderRadius: DS.radius, boxShadow: DS.shadow,
-            padding: '20px 22px', borderLeft: `3px solid ${DS.blue}`,
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-              <Zap size={14} style={{ color: DS.blue }} />
-              <p style={{ fontSize: 11, fontWeight: 700, color: DS.blue, letterSpacing: '0.08em', textTransform: 'uppercase', fontFamily: "'Inter', sans-serif" }}>
-                AI Routing Engine
-              </p>
+        {/* Info Column */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+          
+          {/* AI Predictor Preview */}
+          <div style={{ ...cardStyle, background: DS.blue, color: '#fff', padding: 32 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+              <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Zap size={18} fill="#fff" />
+              </div>
+              <p style={{ fontFamily: "'Manrope', sans-serif", fontSize: 16, fontWeight: 800 }}>AI Routing Insight</p>
             </div>
-            <p style={{ fontSize: 12, color: DS.textMuted, marginBottom: 12, fontFamily: "'Inter', sans-serif" }}>
-              Live routing prediction based on your description.
-            </p>
-
+            
             {prediction ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
-                {[
-                  { label: 'Category',    value: prediction.category    },
-                  { label: 'Assigned To', value: prediction.assignedTo  },
-                  { label: 'Est. Resolution', value: prediction.resolution },
-                ].map((r, i) => (
-                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: 11.5, color: DS.textFaint, fontFamily: "'Inter', sans-serif" }}>{r.label}</span>
-                    <span style={{ fontSize: 12, fontWeight: 600, color: DS.text, fontFamily: "'Inter', sans-serif" }}>{r.value}</span>
+              <div style={{ display:'flex', flexDirection:'column', gap:20, animation:'fadeIn 0.4s' }}>
+                <div>
+                  <p style={{ fontSize: 13, opacity: 0.8, fontWeight: 600 }}>Predicted Category</p>
+                  <p style={{ fontSize: 24, fontWeight: 800, marginTop: 4 }}>{prediction.category}</p>
+                </div>
+                <div style={{ background: 'rgba(255,255,255,0.1)', height: 1 }} />
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                  <div>
+                    <p style={{ fontSize: 12, opacity: 0.8, fontWeight: 600 }}>Authority</p>
+                    <p style={{ fontSize: 14, fontWeight: 700, marginTop: 2 }}>{prediction.assignedTo}</p>
                   </div>
-                ))}
-                <div style={{ marginTop: 4, padding: '7px 12px', borderRadius: DS.radiusSm, background: DS.greenLight, display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <ShieldCheck size={12} style={{ color: DS.green }} />
-                  <p style={{ fontSize: 11.5, fontWeight: 600, color: DS.green, fontFamily: "'Inter', sans-serif" }}>
-                    Likely valid complaint
-                  </p>
+                  <div>
+                    <p style={{ fontSize: 12, opacity: 0.8, fontWeight: 600 }}>SLA Target</p>
+                    <p style={{ fontSize: 14, fontWeight: 700, marginTop: 2 }}>{prediction.resolution}</p>
+                  </div>
                 </div>
               </div>
             ) : (
-              <div style={{ padding: '16px 0', textAlign: 'center' }}>
-                <Zap size={20} style={{ margin: '0 auto 6px', color: DS.textFaint, opacity: 0.4 }} />
-                <p style={{ fontSize: 12, color: DS.textFaint, fontFamily: "'Inter', sans-serif" }}>
-                  Start typing to see routing prediction...
-                </p>
-              </div>
+              <p style={{ fontSize: 14, lineHeight: 1.6, opacity: 0.8 }}>Describe your situation to see how our AI routing engine will categorize and prioritize your grievance.</p>
             )}
           </div>
 
-          {/* Privacy Commitment — Stitch blue tinted card */}
-          <div style={{
-            background: DS.blueLight, borderRadius: DS.radius, boxShadow: DS.shadow,
-            padding: '20px 22px', borderLeft: `3px solid ${DS.blue}`,
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-              <Lock size={14} style={{ color: DS.blue }} />
-              <p style={{ fontSize: 13, fontWeight: 700, color: DS.blueDark, fontFamily: "'Manrope', sans-serif" }}>
-                Privacy First
-              </p>
+          {/* Guidelines */}
+          <div style={cardStyle}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
+              <Lightbulb size={20} style={{ color: DS.blue }} />
+              <p style={{ fontFamily: "'Manrope', sans-serif", fontSize: 18, fontWeight: 800, color: DS.text }}>Submission Tips</p>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
               {[
-                'Anonymous ID generated on submission',
-                'No direct student identity shared with faculty',
-                'Encrypted at rest and in transit',
-                'GDPR-aligned data policies',
-              ].map((item, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 9 }}>
-                  <ShieldCheck size={13} style={{ color: DS.blue, flexShrink: 0, marginTop: 1 }} />
-                  <p style={{ fontSize: 12, color: '#1E3A5F', lineHeight: 1.5, fontFamily: "'Inter', sans-serif" }}>{item}</p>
+                { title: 'Be Precise', text: 'Include dates, times, and clear sequence of events.' },
+                { title: 'Evidence Matters', text: 'Prepare documentation to support your claim if asked.' },
+                { title: 'SLA Awareness', text: 'Resolution varies by complexity and priority level.' }
+              ].map((tip, i) => (
+                <div key={i} style={{ display: 'flex', gap: 16 }}>
+                  <div style={{ fontSize: 20, fontWeight: 900, color: DS.blue + '30', lineHeight: 1 }}>{i+1}</div>
+                  <div>
+                    <p style={{ fontSize: 14, fontWeight: 700, color: DS.text }}>{tip.title}</p>
+                    <p style={{ fontSize: 13, color: DS.textMuted, marginTop: 4, lineHeight: 1.5 }}>{tip.text}</p>
+                  </div>
                 </div>
               ))}
+            </div>
+            
+            <div style={{ marginTop: 32, padding: '20px', borderRadius: 20, background: DS.bg, display: 'flex', alignItems: 'center', gap: 12 }}>
+              <ShieldCheck size={20} style={{ color: DS.green }} />
+              <p style={{ fontSize: 13, color: DS.textMuted, fontWeight: 500 }}>All communications are audited for harassment and integrity.</p>
             </div>
           </div>
 
-          {/* Filing Tips */}
-          <div style={{ background: DS.surface, borderRadius: DS.radius, boxShadow: DS.shadow, padding: '20px 22px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-              <Lightbulb size={14} style={{ color: '#9E4300' }} />
-              <p style={{ fontSize: 13, fontWeight: 700, color: DS.text, fontFamily: "'Manrope', sans-serif" }}>
-                Filing Tips
-              </p>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
-              {[
-                'Be specific — include dates, locations, and people involved.',
-                'Choose the right category for faster resolution.',
-                'Upload evidence to strengthen your case.',
-              ].map((tip, i) => (
-                <div key={i} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-                  <span style={{
-                    width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
-                    background: DS.blueMid, color: DS.blueDark,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 10, fontWeight: 800, fontFamily: "'Inter', sans-serif",
-                  }}>{i + 1}</span>
-                  <p style={{ fontSize: 12, color: DS.textMuted, lineHeight: 1.55, fontFamily: "'Inter', sans-serif" }}>{tip}</p>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
       </div>
-
-      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+      
+      <style>{`
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+      `}</style>
     </div>
   );
 };

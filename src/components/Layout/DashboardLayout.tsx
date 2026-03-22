@@ -3,40 +3,54 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, PlusCircle, ClipboardList, User,
   MessageSquare, LogOut, Moon, Sun, ShieldCheck, Lock,
-  GraduationCap, Home, Brain
+  GraduationCap, Home, Brain, ChevronRight
 } from 'lucide-react';
 import useSessionSecurity from '../../hooks/useSessionSecurity';
 
 // ── Nav definitions per role ──────────────────────────────────────────────────
 const NAV_BY_ROLE: Record<string, { to: string; icon: React.ReactNode; label: string }[]> = {
   Student: [
-    { to: '/dashboard/student',  icon: <LayoutDashboard size={16} />, label: 'Overview'        },
-    { to: '/dashboard/submit',   icon: <PlusCircle size={16} />,      label: 'Submit Complaint' },
-    { to: '/dashboard/list',     icon: <ClipboardList size={16} />,   label: 'My Complaints'   },
-    { to: '/dashboard/profile',  icon: <User size={16} />,            label: 'My Profile'      },
+    { to: '/dashboard/student',  icon: <LayoutDashboard size={20} />, label: 'Overview'        },
+    { to: '/dashboard/submit',   icon: <PlusCircle size={20} />,      label: 'Submit Complaint' },
+    { to: '/dashboard/list',     icon: <ClipboardList size={20} />,   label: 'My Complaints'   },
+    { to: '/dashboard/profile',  icon: <User size={20} />,            label: 'My Profile'      },
   ],
   Faculty: [
-    { to: '/dashboard/faculty',    icon: <ShieldCheck size={16} />,   label: 'Decision Support' },
-    { to: '/dashboard/authority',  icon: <ClipboardList size={16} />, label: 'Complaint Queue'  },
+    { to: '/dashboard/faculty',    icon: <ShieldCheck size={20} />,   label: 'Decision Support' },
+    { to: '/dashboard/authority',  icon: <ClipboardList size={20} />, label: 'Complaint Queue'  },
   ],
   Dean: [
-    { to: '/dashboard/dean',       icon: <GraduationCap size={16} />, label: 'Dean Dashboard'   },
-    { to: '/dashboard/authority',  icon: <ClipboardList size={16} />, label: 'All Complaints'   },
+    { to: '/dashboard/dean',       icon: <GraduationCap size={20} />, label: 'Dean Dashboard'   },
+    { to: '/dashboard/authority',  icon: <ClipboardList size={20} />, label: 'All Complaints'   },
   ],
   HostelDean: [
-    { to: '/dashboard/hosteldean', icon: <Home size={16} />,          label: 'Hostel Dashboard' },
-    { to: '/dashboard/authority',  icon: <ClipboardList size={16} />, label: 'Complaint Queue'  },
+    { to: '/dashboard/hosteldean', icon: <Home size={20} />,          label: 'Hostel Dashboard' },
+    { to: '/dashboard/authority',  icon: <ClipboardList size={20} />, label: 'Complaint Queue'  },
   ],
   Admin: [
-    { to: '/dashboard/admin',      icon: <LayoutDashboard size={16} />, label: 'System Analytics' },
-    { to: '/dashboard/authority',  icon: <ClipboardList size={16} />,   label: 'Complaint Queue'  },
-    { to: '/dashboard/faculty',    icon: <Brain size={16} />,           label: 'Faculty View'    },
+    { to: '/dashboard/admin',      icon: <LayoutDashboard size={20} />, label: 'System Analytics' },
+    { to: '/dashboard/authority',  icon: <ClipboardList size={20} />,   label: 'Complaint Queue'  },
+    { to: '/dashboard/faculty',    icon: <Brain size={20} />,           label: 'Faculty View'    },
   ],
 };
 
 const ROLE_LABELS: Record<string, string> = {
-  Student: 'STUDENT PORTAL', Faculty: 'FACULTY PORTAL', Dean: 'DEAN\'S OFFICE',
-  HostelDean: 'HOSTEL ADMIN', Admin: 'ADMIN PORTAL',
+  Student: 'Student Portal', Faculty: 'Faculty Portal', Dean: "Dean's Office",
+  HostelDean: 'Hostel Admin', Admin: 'Admin Portal',
+};
+
+const DS = {
+  bg: '#F8F9FA',
+  blue: '#1A73E8',
+  blueLight: '#EBF3FD',
+  emerald: '#10B981',
+  text: '#111827',
+  textMuted: '#414754',
+  textFaint: '#727785',
+  glass: 'rgba(255, 255, 255, 0.75)',
+  glassDark: 'rgba(17, 24, 39, 0.85)',
+  blur: 'blur(24px)',
+  shadowFloating: '0 24px 48px rgba(0,0,0,0.08)',
 };
 
 const DashboardLayout = () => {
@@ -45,130 +59,174 @@ const DashboardLayout = () => {
   const [dark, setDark] = useState(() => document.documentElement.classList.contains('dark'));
   const { sessionState, timeLeft, extendSession, forceLogout } = useSessionSecurity();
 
+  // Glassmorphic state: true = expanded sidebar, false = iconic sidebar
+  const [isExpanded, setIsExpanded] = useState(true);
+
   useEffect(() => {
     document.documentElement.classList.toggle('dark', dark);
   }, [dark]);
 
   const navItems = NAV_BY_ROLE[role] ?? NAV_BY_ROLE.Student;
+  const isStudent = role === 'Student';
+  const accent = isStudent ? DS.blue : DS.emerald;
+  const accentLight = isStudent ? DS.blueLight : '#ECFDF5';
 
   const fmtTime = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 
   const linkStyle = ({ isActive }: { isActive: boolean }) => ({
     display: 'flex',
     alignItems: 'center',
-    gap: 10,
-    padding: '9px 14px',
-    borderRadius: 10,
-    fontSize: 13,
-    fontWeight: isActive ? 600 : 400,
-    color: isActive ? '#FFFFFF' : 'var(--sidebar-text)',
-    background: isActive ? 'var(--sidebar-active-bg)' : 'transparent',
+    gap: 14,
+    padding: isExpanded ? '12px 18px' : '12px',
+    borderRadius: 16,
+    fontSize: 14,
+    fontWeight: isActive ? 700 : 500,
+    color: isActive ? accent : DS.textMuted,
+    background: isActive ? accentLight : 'transparent',
     textDecoration: 'none',
-    transition: 'all 0.15s',
+    transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
     position: 'relative' as const,
-    borderLeft: isActive ? '3px solid var(--em)' : '3px solid transparent',
+    whiteSpace: 'nowrap' as const,
+    justifyContent: isExpanded ? 'flex-start' : 'center',
   });
 
   return (
-    <div style={{ display: 'flex', minHeight: '100svh', width: '100%', background: 'var(--bg)' }}>
-      {/* ── Sidebar ── */}
-      <aside style={{
-        width: 220, flexShrink: 0, background: 'var(--sidebar-bg)',
-        display: 'flex', flexDirection: 'column',
-        borderRight: '1px solid rgba(255,255,255,0.06)',
-        position: 'sticky', top: 0, height: '100svh', overflow: 'hidden',
+    <div style={{ display: 'flex', minHeight: '100svh', width: '100%', background: DS.bg, fontFamily: "'Inter', sans-serif" }}>
+      
+      {/* ── Floating Glassmorphic Sidebar ── */}
+      <div style={{ 
+        position: 'sticky', top: 0, height: '100svh', display: 'flex', alignItems: 'center', 
+        paddingLeft: 24, paddingRight: 0, paddingBottom: 24, paddingTop: 24, zIndex: 100 
       }}>
-        {/* Logo */}
-        <div style={{ padding: '22px 18px 18px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 34, height: 34, borderRadius: 10, background: 'var(--em)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <ShieldCheck size={18} color="#fff" />
-            </div>
-            <div>
-              <p style={{ fontSize: 14, fontWeight: 700, color: '#FFFFFF', lineHeight: 1.1 }}>E-Grievance</p>
-              <p style={{ fontSize: 10, fontWeight: 600, color: 'var(--em)', letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: 2 }}>DSS Portal</p>
+        <aside style={{
+          width: isExpanded ? 260 : 80,
+          height: '100%',
+          background: DS.glass,
+          backdropFilter: DS.blur,
+          WebkitBackdropFilter: DS.blur,
+          borderRadius: 24,
+          border: '1px solid rgba(255,255,255,0.8)',
+          boxShadow: DS.shadowFloating,
+          display: 'flex', flexDirection: 'column',
+          transition: 'width 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+          overflow: 'hidden',
+          position: 'relative'
+        }}>
+          
+          {/* Toggle Button */}
+          <button 
+            onClick={() => setIsExpanded(!isExpanded)}
+            style={{ 
+              position: 'absolute', right: isExpanded ? 16 : 0, top: 24, width: 28, height: 28, 
+               margin: isExpanded ? 0 : '0 auto', left: isExpanded ? 'auto' : 0, right: isExpanded ? 16 : 0, // center if collapsed
+              borderRadius: '50%', background: DS.surface, border: `1px solid ${DS.surfaceHigh}`, 
+              display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 2, 
+              color: DS.text, boxShadow: `0 4px 12px rgba(0,0,0,0.05)`, transition: 'transform 0.4s' 
+            }}>
+            <ChevronRight size={14} style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.4s' }} />
+          </button>
+
+          {/* Logo Section */}
+          <div style={{ padding: isExpanded ? '32px 24px 24px' : '32px 0 24px', display: 'flex', flexDirection: 'column', alignItems: isExpanded ? 'flex-start' : 'center', borderBottom: `1px solid rgba(0,0,0,0.04)` }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ width: 40, height: 40, borderRadius: 12, background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: `0 8px 16px ${accent}40` }}>
+                <ShieldCheck size={20} color="#fff" />
+              </div>
+              
+              {isExpanded && (
+                <div style={{ animation: 'fadeIn 0.3s' }}>
+                  <p style={{ fontFamily: "'Manrope', sans-serif", fontSize: 18, fontWeight: 800, color: DS.text, lineHeight: 1 }}>E-Grievance</p>
+                  <p style={{ fontSize: 11, fontWeight: 700, color: accent, letterSpacing: '0.06em', textTransform: 'uppercase', marginTop: 4 }}>DSS Portal</p>
+                </div>
+              )}
             </div>
           </div>
-        </div>
 
-        {/* Session security badge */}
-        <div style={{ padding: '10px 14px', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 10px', borderRadius: 8, background: 'rgba(16,185,129,0.1)' }}>
-            <div style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--em)', flexShrink: 0 }} />
-            <p style={{ fontSize: 10, fontWeight: 600, color: 'var(--em)', letterSpacing: '0.05em' }}>SESSION SECURE</p>
-            <Lock size={9} style={{ color: 'var(--em)', marginLeft: 'auto' }} />
-          </div>
-        </div>
+          {/* Role Badge */}
+          {isExpanded && (
+            <div style={{ padding: '24px 24px 8px' }}>
+              <p style={{ fontSize: 11, fontWeight: 800, color: DS.textFaint, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                {ROLE_LABELS[role] ?? 'PORTAL'}
+              </p>
+            </div>
+          )}
 
-        {/* Role badge */}
-        <div style={{ padding: '12px 18px 6px' }}>
-          <p style={{ fontSize: 9, fontWeight: 700, color: 'var(--sidebar-section)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6 }}>
-            {ROLE_LABELS[role] ?? 'PORTAL'}
-          </p>
-        </div>
+          {/* Navigation */}
+          <nav style={{ flex: 1, padding: isExpanded ? '12px 20px' : '24px 12px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {navItems.map(item => (
+              <NavLink key={item.to} to={item.to} style={linkStyle} end title={item.label}>
+                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{item.icon}</span>
+                {isExpanded && <span style={{ animation: 'fadeIn 0.3s' }}>{item.label}</span>}
+              </NavLink>
+            ))}
+          </nav>
 
-        {/* Nav */}
-        <nav style={{ flex: 1, padding: '4px 10px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 2 }}>
-          {navItems.map(item => (
-            <NavLink key={item.to} to={item.to} style={linkStyle} end>
-              <span style={{ opacity: 0.85 }}>{item.icon}</span>
-              {item.label}
-            </NavLink>
-          ))}
-
-          {/* Support section — AI Chatbot opens the chatbot FAB (no hard redirect needed) */}
-          <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', margin: '10px 0', padding: '10px 0 4px' }}>
-            <p style={{ fontSize: 9, fontWeight: 700, color: 'var(--sidebar-section)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6, paddingLeft: 4 }}>SUPPORT</p>
+          {/* Bottom Actions */}
+          <div style={{ padding: isExpanded ? '24px' : '24px 12px', borderTop: `1px solid rgba(0,0,0,0.04)`, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            
+            {/* Support / Chatbot */}
             <button
-              onClick={() => {
-                // Trigger the chatbot FAB by clicking it programmatically
-                const fab = document.querySelector('[data-chatbot-fab]') as HTMLButtonElement;
-                if (fab) fab.click();
+              onClick={() => { const fab = document.querySelector('[data-chatbot-fab]') as HTMLButtonElement; if (fab) fab.click(); }}
+              title="AI Support"
+              style={{ 
+                display: 'flex', alignItems: 'center', gap: 14, padding: isExpanded ? '12px 18px' : '12px', borderRadius: 16, 
+                fontSize: 14, fontWeight: 600, color: DS.text, background: DS.surface, border: 'none', cursor: 'pointer', 
+                width: '100%', transition: 'all 0.2s', boxShadow: `0 4px 12px rgba(0,0,0,0.05)`, justifyContent: isExpanded ? 'flex-start' : 'center'
               }}
-              style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 14px', borderRadius: 10, fontSize: 13, fontWeight: 400, color: 'var(--sidebar-text)', background: 'transparent', border: 'none', cursor: 'pointer', width: '100%', transition: 'all 0.15s' }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
+              onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+              onMouseLeave={e => e.currentTarget.style.transform = 'none'}
+            >
+              <MessageSquare size={18} style={{ color: accent }} />
+              {isExpanded && <span style={{ animation: 'fadeIn 0.3s' }}>AI Chatbot</span>}
+            </button>
+
+            {/* Logout */}
+            <button
+              onClick={forceLogout}
+              title="Logout"
+              style={{ 
+                display: 'flex', alignItems: 'center', gap: 14, padding: isExpanded ? '12px 18px' : '12px', borderRadius: 16, 
+                fontSize: 14, fontWeight: 600, color: DS.red, background: 'transparent', border: 'none', cursor: 'pointer', 
+                width: '100%', transition: 'all 0.2s', justifyContent: isExpanded ? 'flex-start' : 'center'
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = DS.redLight}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             >
-              <MessageSquare size={16} style={{ opacity: 0.75 }} />
-              AI Chatbot
+              <LogOut size={18} />
+              {isExpanded && <span style={{ animation: 'fadeIn 0.3s' }}>Logout</span>}
             </button>
+
           </div>
-        </nav>
+        </aside>
+      </div>
 
-        {/* Footer */}
-        <div style={{ padding: '12px 14px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <button
-            onClick={() => setDark(!dark)}
-            style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', border: 'none', cursor: 'pointer', color: 'var(--sidebar-text)', fontSize: 12, width: '100%' }}
-          >
-            {dark ? <Sun size={14} /> : <Moon size={14} />}
-            {dark ? 'Light Mode' : 'Dark Mode'}
-          </button>
-          <button
-            onClick={forceLogout}
-            style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, background: 'transparent', border: 'none', cursor: 'pointer', color: '#EF4444', fontSize: 12, width: '100%' }}
-          >
-            <LogOut size={14} />
-            Logout
-          </button>
-        </div>
-      </aside>
-
-      {/* ── Main ── */}
-      <main style={{ flex: 1, minWidth: 0, overflowY: 'auto', position: 'relative' }}>
+      {/* ── Main Content Area ── */}
+      <main style={{ flex: 1, minWidth: 0, paddingLeft: 0, position: 'relative' }}>
         <Outlet />
       </main>
 
-      {/* ── Session Warning Banner ── */}
+      {/* ── Session Warning Banner (Floating Glass) ── */}
       {sessionState === 'warning' && (
-        <div className="session-warn">
-          <span className="dot" />
-          Session expires in <strong>{fmtTime(timeLeft)}</strong>
+        <div style={{
+          position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)',
+          background: DS.glassDark, backdropFilter: DS.blur, border: '1px solid rgba(255,255,255,0.1)',
+          color: '#fff', padding: '16px 24px', borderRadius: 99, fontSize: 13, fontWeight: 500,
+          display: 'flex', alignItems: 'center', gap: 12, zIndex: 9999, boxShadow: DS.shadowFloating,
+          animation: 'fadeUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+        }}>
+          <Lock size={16} style={{ color: DS.amber }} />
+          <span>Session expires in <strong style={{ fontFamily: 'monospace', fontSize: 14 }}>{fmtTime(timeLeft)}</strong></span>
           <button
             onClick={extendSession}
-            style={{ marginLeft: 8, background: 'var(--em)', border: 'none', color: '#fff', fontSize: 12, fontWeight: 600, borderRadius: 6, padding: '4px 12px', cursor: 'pointer' }}
+            style={{ 
+              marginLeft: 12, background: DS.emerald, border: 'none', color: '#fff', 
+              fontSize: 13, fontWeight: 700, borderRadius: 99, padding: '8px 16px', cursor: 'pointer',
+              transition: 'background 0.2s'
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = DS.emeraldDark}
+            onMouseLeave={e => e.currentTarget.style.background = DS.emerald}
           >
-            Stay Logged In
+            Extend Session
           </button>
         </div>
       )}

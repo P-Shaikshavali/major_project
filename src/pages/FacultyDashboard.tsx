@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import {
   ClipboardList, CheckCircle, Clock, TrendingUp, Shield, AlertTriangle,
-  Brain, ChevronDown, Filter, RefreshCw, ShieldCheck, Zap, BarChart2, LogOut
+  Brain, ChevronDown, Filter, RefreshCw, ShieldCheck, Zap, BarChart2
 } from 'lucide-react';
 import api from '../services/api';
 
@@ -560,8 +560,8 @@ const FacultyDashboard = () => {
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 28 }}>
         <div>
           <p style={{ fontSize: 11, fontWeight: 700, color: DS.emerald, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 5 }}>Faculty Portal</p>
-          <h1 style={{ fontSize: 26, fontWeight: 700, color: DS.charcoal, letterSpacing: '-0.02em', lineHeight: 1.2 }}>Decision Support Interface</h1>
-          <p style={{ fontSize: 13, color: DS.textMuted, marginTop: 5 }}>Privacy-preserving grievance management with AI-assisted analysis.</p>
+          <h1 style={{ fontFamily: "'Manrope', sans-serif", fontSize: 32, fontWeight: 800, color: DS.charcoal, letterSpacing: '-0.02em', lineHeight: 1.2 }}>Decision Support Interface</h1>
+          <p style={{ fontSize: 15, color: DS.textMuted, marginTop: 8 }}>Privacy-preserving grievance management with AI-assisted analysis.</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '7px 16px', borderRadius: 99, background: DS.emeraldLight }}>
