@@ -12,15 +12,16 @@ const navStudent = [
   { to: '/dashboard/list',      icon: <ClipboardList size={16} />,   label: 'My Complaints' },
   { to: '/dashboard/profile',   icon: <User size={16} />,            label: 'My Profile' },
 ];
-const navAuthority = [
-  { to: '/dashboard/authority', icon: <ShieldCheck size={16} />,    label: 'Complaint Queue' },
+const navFaculty = [
+  { to: '/dashboard/faculty',   icon: <ShieldCheck size={16} />,    label: 'Decision Support' },
+  { to: '/dashboard/authority', icon: <ClipboardList size={16} />,  label: 'Complaint Queue' },
 ];
 const navAdmin = [
   { to: '/dashboard/admin',     icon: <LayoutDashboard size={16} />, label: 'System Analytics' },
 ];
 
 const DashboardLayout = () => {
-  const navigate = useNavigate();
+  useNavigate(); // kept for future programmatic navigation
   const role = localStorage.getItem('userRole') || 'Student';
   const [dark, setDark] = useState(() => document.documentElement.classList.contains('dark'));
   const { sessionState, timeLeft, extendSession, forceLogout } = useSessionSecurity();
@@ -29,7 +30,7 @@ const DashboardLayout = () => {
     document.documentElement.classList.toggle('dark', dark);
   }, [dark]);
 
-  const navItems = role === 'Admin' ? navAdmin : role === 'Student' ? navStudent : navAuthority;
+  const navItems = role === 'Admin' ? navAdmin : role === 'Student' ? navStudent : navFaculty;
 
   const fmtTime = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 

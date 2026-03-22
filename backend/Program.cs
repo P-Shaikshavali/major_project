@@ -60,6 +60,7 @@ builder.Services.AddScoped<EGrievanceApi.Services.IGrievanceRoutingService, EGri
 builder.Services.AddScoped<EGrievanceApi.Services.IGrievanceService, EGrievanceApi.Services.GrievanceService>();
 builder.Services.AddScoped<EGrievanceApi.Services.IChatbotService, EGrievanceApi.Services.ChatbotService>();
 builder.Services.AddScoped<EGrievanceApi.Services.IAnonymityService, EGrievanceApi.Services.AnonymityService>();
+builder.Services.AddScoped<EGrievanceApi.Services.IFacultyGrievanceService, EGrievanceApi.Services.FacultyGrievanceService>();
 
 builder.Services.AddHostedService<EGrievanceApi.Services.EscalationHostedService>();
 

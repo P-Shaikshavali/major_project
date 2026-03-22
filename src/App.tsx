@@ -8,6 +8,7 @@ import SubmitComplaint from './pages/SubmitComplaint';
 import ComplaintList from './pages/ComplaintList';
 import AuthorityDashboard from './pages/AuthorityDashboard';
 import AdminAnalytics from './pages/AdminAnalytics';
+import FacultyDashboard from './pages/FacultyDashboard';
 import DashboardLayout from './components/Layout/DashboardLayout';
 import SmartChatbot from './components/Chatbot/SmartChatbot';
 
@@ -26,6 +27,7 @@ function App() {
             <Route path="profile"    element={<StudentProfile />} />
             <Route path="submit"     element={<SubmitComplaint />} />
             <Route path="list"       element={<ComplaintList />} />
+            <Route path="faculty"    element={<FacultyDashboard />} />
             <Route path="authority"  element={<AuthorityDashboard />} />
             <Route path="admin"      element={<AdminAnalytics />} />
           </Route>
