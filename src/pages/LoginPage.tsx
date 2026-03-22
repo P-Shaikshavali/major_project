@@ -9,7 +9,9 @@ const sanitize = (v: string) => v.replace(/[<>"'`]/g, '');
 const LoginPage = () => {
   const [isLogin, setIsLogin]     = useState(true);
   const [isLoading, setIsLoading] = useState(false);
-  const [errorMsg, setErrorMsg]   = useState('');
+  // Check if redirected due to session expiry
+  const sessionExpired = new URLSearchParams(window.location.search).get('reason') === 'session_expired';
+  const [errorMsg, setErrorMsg]   = useState(sessionExpired ? '⏳ Your session has expired. Please log in again.' : '');
   const [failCount, setFailCount] = useState(0);
   const [showPwd, setShowPwd]     = useState(false);
   const [name, setName]           = useState('');
