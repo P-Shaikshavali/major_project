@@ -61,12 +61,14 @@ const predictCategory = (desc: string): { category: string; assignedTo: string; 
 };
 
 const SubmitComplaint = () => {
-  const [desc,        setDesc]        = useState('');
-  const [category,    setCategory]    = useState('');
-  const [priority,    setPriority]    = useState<Priority>('Medium');
-  const [anon,        setAnon]        = useState(false);
-  const [isSubmitting,setIsSubmitting]= useState(false);
-  const [prediction,  setPrediction]  = useState<ReturnType<typeof predictCategory>>(null);
+  const [desc,          setDesc]          = useState('');
+  const [category,      setCategory]      = useState('');
+  const [priority,      setPriority]      = useState<Priority>('Medium');
+  const [anon,          setAnon]          = useState(false);
+  const [isSubmitting,  setIsSubmitting]  = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [submitError,   setSubmitError]   = useState('');
+  const [prediction,    setPrediction]    = useState<ReturnType<typeof predictCategory>>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -76,6 +78,8 @@ const SubmitComplaint = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (desc.length < 10) return;
+    setSubmitError('');
+    setSubmitSuccess(false);
     setIsSubmitting(true);
     try {
       await api.post('/grievance/create', {
@@ -84,9 +88,12 @@ const SubmitComplaint = () => {
         priority,
         isAnonymous: anon,
       });
-      navigate('/dashboard/list');
-    } catch { alert('Failed to submit. Check your connection and try again.'); }
-    finally { setIsSubmitting(false); }
+      setSubmitSuccess(true);
+      setTimeout(() => navigate('/dashboard/list'), 1500);
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || 'Server unavailable. Please try again or contact support.';
+      setSubmitError(msg);
+    } finally { setIsSubmitting(false); }
   };
 
   // ── Field style (Stitch Elegant Input) ─────────────────────────────────────
@@ -153,6 +160,27 @@ const SubmitComplaint = () => {
                 FILE A GRIEVANCE
               </p>
             </div>
+
+            {/* Success banner */}
+            {submitSuccess && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', borderRadius: DS.radiusSm, background: '#D9F0E3', borderLeft: '3px solid #1B6B3A' }}>
+                <ShieldCheck size={15} style={{ color: '#1B6B3A', flexShrink: 0 }} />
+                <p style={{ fontSize: 13, fontWeight: 600, color: '#1B6B3A', fontFamily: "'Inter', sans-serif" }}>
+                  ✓ Complaint submitted successfully! Redirecting...
+                </p>
+              </div>
+            )}
+
+            {/* Error banner */}
+            {submitError && (
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '12px 16px', borderRadius: DS.radiusSm, background: '#FEF2F2', borderLeft: '3px solid #B91C1C' }}>
+                <span style={{ fontSize: 16, flexShrink: 0 }}>⚠</span>
+                <div>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: '#B91C1C', marginBottom: 2, fontFamily: "'Inter', sans-serif" }}>Submission Failed</p>
+                  <p style={{ fontSize: 12, color: '#991B1B', fontFamily: "'Inter', sans-serif" }}>{submitError}</p>
+                </div>
+              </div>
+            )}
 
             {/* 1. Category dropdown */}
             <div>
