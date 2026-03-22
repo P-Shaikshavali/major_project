@@ -1,39 +1,31 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Loader2, ShieldCheck, Lock, Eye, EyeOff, Zap, ArrowLeft } from 'lucide-react';
+import { Loader2, ShieldCheck, Lock, Eye, EyeOff, Zap, ArrowLeft, User, GraduationCap, Shield } from 'lucide-react';
 import api from '../services/api';
 
 // ── Sanitize input (XSS prevention) ──
 const sanitize = (v: string) => v.replace(/[<>"'`]/g, '');
 
-// ── Stitch "Academic Sentinel" Design Tokens ──────────────────────────────────
+// ── Stitch "Volt Sentinel" Design Tokens ────────────────────────────────────
 const DS = {
   bg:            '#F8F9FA',
   surface:       '#FFFFFF',
-  surfaceLow:    '#F3F4F5',
-  surfaceHigh:   '#E1E3E4',
   blue:          '#1A73E8',
   blueDark:      '#005BBF',
-  blueLight:     '#EBF3FD',
-  blueMid:       '#D8E2FF',
+  indigo:        '#6366F1',
   text:          '#111827',
   textMuted:     '#414754',
   textFaint:     '#727785',
-  green:         '#1B6B3A',
-  greenLight:    '#D9F0E3',
-  red:           '#B91C1C',
+  red:           '#EF4444',
   redLight:      '#FEF2F2',
-  shadowAmbient: '0 20px 40px rgba(44,47,49,0.06)',
-  radiusCard:    '20px',
-  radiusBtn:     '12px',
-  radiusMd:      '10px',
-  radiusSm:      '8px',
+  radiusCard:    '32px',
+  radiusBtn:     '16px',
+  shadowGlass:   '0 30px 60px rgba(0,0,0,0.12)',
 };
 
 const LoginPage = () => {
   const [isLogin, setIsLogin]     = useState(true);
   const [isLoading, setIsLoading] = useState(false);
-  // Check if redirected due to session expiry
   const sessionExpired = new URLSearchParams(window.location.search).get('reason') === 'session_expired';
   const [errorMsg, setErrorMsg]   = useState(sessionExpired ? '⏳ Your session has expired. Please log in again.' : '');
   const [failCount, setFailCount] = useState(0);
@@ -75,138 +67,151 @@ const LoginPage = () => {
     } finally { setIsLoading(false); }
   };
 
-  // ── Stitch Elegant Input Styles ──
-  const fieldStyle: React.CSSProperties = {
-    width: '100%', padding: '14px 16px', borderRadius: DS.radiusMd,
-    background: DS.surfaceHigh, border: 'none', outline: 'none',
-    fontSize: 14, color: DS.text, fontFamily: "'Inter', sans-serif",
-    transition: 'all 0.2s',
-  };
-
-  const onFocus = (e: any) => {
-    e.target.style.background = '#F0F5FF';
-    e.target.style.boxShadow  = `inset 0 -2px 0 ${DS.blue}`;
-  };
-  const onBlur = (e: any) => {
-    e.target.style.background = DS.surfaceHigh;
-    e.target.style.boxShadow  = 'none';
+  const ROLE_ICONS: Record<string, any> = {
+    Student: <GraduationCap size={16} />,
+    Faculty: <User size={16} />,
+    Warden:  <Shield size={16} />,
+    Dean:    <Shield size={16} />,
+    Admin:   <Zap size={16} />,
   };
 
   return (
     <div style={{ backgroundColor: DS.bg, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', fontFamily: "'Inter', sans-serif" }}>
-      {/* Google Fonts */}
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600&display=swap');`}</style>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+        
+        .mesh-bg {
+          position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 0;
+          background: 
+            radial-gradient(circle at 10% 10%, ${DS.blue}10 0%, transparent 40%),
+            radial-gradient(circle at 90% 90%, ${DS.indigo}10 0%, transparent 40%);
+        }
+
+        .floating-glass {
+          background: rgba(255, 255, 255, 0.75);
+          backdrop-filter: blur(40px);
+          border: 1px solid rgba(255, 255, 255, 0.8);
+          box-shadow: ${DS.shadowGlass};
+          transform: translateY(0);
+          transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .floating-glass:hover { transform: translateY(-5px); }
+
+        .form-input {
+          width: 100%; padding: 16px 20px; border-radius: 14px;
+          background: #F1F4F8; border: 2px solid transparent;
+          font-size: 15px; color: ${DS.text}; transition: all 0.2s;
+          outline: none;
+        }
+        .form-input:focus {
+          background: white; border-color: ${DS.blue};
+          box-shadow: 0 10px 20px rgba(26,115,232,0.06);
+        }
+
+        .btn-submit {
+          background: linear-gradient(135deg, ${DS.blue}, ${DS.indigo});
+          color: white; border: none; padding: 18px; border-radius: 16px;
+          font-weight: 800; font-size: 16px; cursor: pointer;
+          display: flex; align-items: center; justifyContent: center; gap: 10px;
+          box-shadow: 0 12px 24px ${DS.blue}30;
+          transition: all 0.2s;
+        }
+        .btn-submit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 15px 30px ${DS.blue}40; }
+        .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .role-pill {
+          padding: 10px 16px; border-radius: 12px; font-size: 13px; font-weight: 700;
+          cursor: pointer; border: none; display: flex; align-items: center; gap: 8px;
+          transition: all 0.2s; background: #F1F4F8; color: ${DS.textFaint};
+        }
+        .role-pill.active { background: white; color: ${DS.blue}; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+      `}</style>
       
-      {/* Subtle background glow */}
-      <div style={{ position: 'absolute', top: '20%', left: '50%', transform: 'translate(-50%, -50%)', width: 600, height: 600, background: DS.blueLight, filter: 'blur(100px)', zIndex: 0, borderRadius: '50%', opacity: 0.7 }} />
+      <div className="mesh-bg" />
 
       {/* Top Left Back Button */}
-      <Link to="/" style={{ position: 'absolute', top: 32, left: 32, display: 'flex', alignItems: 'center', gap: 8, color: DS.textMuted, textDecoration: 'none', fontWeight: 600, fontSize: 14, zIndex: 10 }}>
-        <ArrowLeft size={16} /> Back to Home
+      <Link to="/" style={{ position: 'absolute', top: 40, left: 40, display: 'flex', alignItems: 'center', gap: 10, color: DS.textMuted, textDecoration: 'none', fontWeight: 700, fontSize: 13, zIndex: 10, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+        <ArrowLeft size={16} /> Dashboard Home
       </Link>
 
-      <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 440, padding: 24 }}>
+      <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 480, padding: 24 }}>
         
         {/* Brand Header */}
-        <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div style={{ display: 'inline-flex', background: DS.blue, padding: 12, borderRadius: 14, marginBottom: 16 }}>
-            <Zap size={28} color="#FFF" fill="#FFF" />
+        <div style={{ textAlign: 'center', marginBottom: 48 }}>
+          <div style={{ display: 'inline-flex', background: DS.blue, padding: 14, borderRadius: 16, marginBottom: 20, boxShadow: '0 10px 20px ' + DS.blue + '30' }}>
+            <Zap size={32} color="#FFF" fill="#FFF" />
           </div>
-          <h1 style={{ fontFamily: "'Manrope', sans-serif", fontWeight: 800, fontSize: 28, color: DS.text, letterSpacing: '-0.02em', marginBottom: 8 }}>
+          <h1 style={{ fontFamily: "'Manrope', sans-serif", fontWeight: 800, fontSize: 32, color: DS.text, letterSpacing: '-0.03em', margin: 0 }}>
             VoltGrievance
           </h1>
-          <p style={{ color: DS.textMuted, fontSize: 14.5 }}>
-            Academic resolution, illuminated.
-          </p>
+          <p style={{ color: DS.textMuted, fontSize: 15, marginTop: 8 }}>Secure Academic Decision Support Portal</p>
         </div>
 
-        {/* Form Card */}
-        <div style={{ background: DS.surface, padding: 40, borderRadius: DS.radiusCard, boxShadow: DS.shadowAmbient, border: '1px solid rgba(255,255,255,0.8)' }}>
+        {/* Floating Glass Form Card */}
+        <div className="floating-glass" style={{ padding: 48, borderRadius: DS.radiusCard }}>
           
-          <h2 style={{ fontFamily: "'Manrope', sans-serif", fontWeight: 800, fontSize: 22, color: DS.text, letterSpacing: '-0.01em', marginBottom: 24 }}>
-            {isLogin ? 'Sign in to portal' : 'Create an account'}
-          </h2>
-
-          {/* Toggle Login/Register */}
-          <div style={{ display: 'flex', background: DS.surfaceLow, borderRadius: DS.radiusBtn, padding: 4, marginBottom: 24 }}>
-            <button onClick={() => { setIsLogin(true); setErrorMsg(''); }} style={{ flex: 1, padding: '10px 0', borderRadius: 8, fontSize: 13.5, fontWeight: 600, border: 'none', cursor: 'pointer', background: isLogin ? DS.surface : 'transparent', color: isLogin ? DS.text : DS.textFaint, boxShadow: isLogin ? '0 2px 8px rgba(0,0,0,0.04)' : 'none', transition: 'all 0.2s' }}>
-              Sign In
-            </button>
-            <button onClick={() => { setIsLogin(false); setErrorMsg(''); }} style={{ flex: 1, padding: '10px 0', borderRadius: 8, fontSize: 13.5, fontWeight: 600, border: 'none', cursor: 'pointer', background: !isLogin ? DS.surface : 'transparent', color: !isLogin ? DS.text : DS.textFaint, boxShadow: !isLogin ? '0 2px 8px rgba(0,0,0,0.04)' : 'none', transition: 'all 0.2s' }}>
-              Sign Up
-            </button>
+          {/* Toggle Switch */}
+          <div style={{ display: 'flex', background: '#F1F4F8', borderRadius: 12, padding: 5, marginBottom: 32 }}>
+            <button onClick={() => setIsLogin(true)} style={{ flex: 1, padding: '12px 0', borderRadius: 10, fontSize: 14, fontWeight: 700, border: 'none', cursor: 'pointer', background: isLogin ? 'white' : 'transparent', color: isLogin ? DS.text : DS.textFaint, boxShadow: isLogin ? '0 4px 10px rgba(0,0,0,0.05)' : 'none', transition: '0.2s' }}>Sign In</button>
+            <button onClick={() => setIsLogin(false)} style={{ flex: 1, padding: '12px 0', borderRadius: 10, fontSize: 14, fontWeight: 700, border: 'none', cursor: 'pointer', background: !isLogin ? 'white' : 'transparent', color: !isLogin ? DS.text : DS.textFaint, boxShadow: !isLogin ? '0 4px 10px rgba(0,0,0,0.05)' : 'none', transition: '0.2s' }}>Sign Up</button>
           </div>
 
           {errorMsg && (
-            <div style={{ padding: '12px 16px', background: DS.redLight, borderLeft: `3px solid ${DS.red}`, borderRadius: DS.radiusSm, color: DS.red, fontSize: 13, fontWeight: 500, marginBottom: 24, display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span style={{ fontSize: 16 }}>⚠</span> {errorMsg}
+            <div style={{ padding: '14px 18px', background: DS.redLight, borderRadius: 14, color: DS.red, fontSize: 13, fontWeight: 600, marginBottom: 32, border: '1px solid ' + DS.red + '20' }}>
+               {errorMsg}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             
             {!isLogin && (
               <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: DS.textMuted, marginBottom: 6 }}>Full Name</label>
-                <input required type="text" placeholder="John Doe" value={name} onChange={e => setName(e.target.value)} style={fieldStyle} onFocus={onFocus} onBlur={onBlur} disabled={isLoading || LOCKED} />
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: DS.textFaint, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Verification Name</label>
+                <input required type="text" placeholder="Alex Sentinel" value={name} onChange={e => setName(e.target.value)} className="form-input" disabled={isLoading || LOCKED} />
               </div>
             )}
 
             <div>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: DS.textMuted, marginBottom: 6 }}>University Email</label>
-              <input required type="email" placeholder="student@university.edu" value={email} onChange={e => setEmail(e.target.value)} style={fieldStyle} onFocus={onFocus} onBlur={onBlur} disabled={isLoading || LOCKED} />
+              <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: DS.textFaint, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Academic Email</label>
+              <input required type="email" placeholder="alex@university.edu" value={email} onChange={e => setEmail(e.target.value)} className="form-input" disabled={isLoading || LOCKED} />
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: DS.textMuted, marginBottom: 6 }}>Password</label>
+              <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: DS.textFaint, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Pass-Key</label>
               <div style={{ position: 'relative' }}>
-                <input required type={showPwd ? 'text' : 'password'} placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} style={{ ...fieldStyle, paddingRight: 44 }} onFocus={onFocus} onBlur={onBlur} disabled={isLoading || LOCKED} />
-                <button type="button" onClick={() => setShowPwd(!showPwd)} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: DS.textFaint }}>
-                  {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
+                <input required type={showPwd ? 'text' : 'password'} placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} className="form-input" style={{ paddingRight: 50 }} disabled={isLoading || LOCKED} />
+                <button type="button" onClick={() => setShowPwd(!showPwd)} style={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: DS.textFaint }}>
+                  {showPwd ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
             </div>
 
-            {/* Role Selection */}
+            {/* Role Grid */}
             <div>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: DS.textMuted, marginBottom: 8 }}>Access Role</label>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: DS.textFaint, marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Authorization Role</label>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
                 {['Student', 'Faculty', 'Warden', 'Dean', 'Admin'].map(r => (
-                  <button key={r} type="button" onClick={() => setRole(r)} disabled={isLoading || LOCKED}
-                    style={{
-                      padding: '8px 16px', borderRadius: 40, fontSize: 12, fontWeight: 600, cursor: 'pointer', border: 'none',
-                      background: role === r ? DS.blueLight : DS.surfaceLow,
-                      color: role === r ? DS.blueDark : DS.textFaint,
-                      boxShadow: role === r ? `inset 0 0 0 1px ${DS.blue}` : 'none',
-                      transition: 'all 0.2s'
-                    }}>
-                    {r}
+                  <button key={r} type="button" onClick={() => setRole(r)} disabled={isLoading || LOCKED} className={`role-pill ${role === r ? 'active' : ''}`}>
+                    {ROLE_ICONS[r]} {r}
                   </button>
                 ))}
               </div>
             </div>
 
-            <button type="submit" disabled={isLoading || LOCKED} 
-              style={{
-                background: `linear-gradient(135deg, ${DS.blue}, ${DS.blueDark})`,
-                color: '#FFF', fontWeight: 600, padding: '16px', borderRadius: DS.radiusBtn,
-                fontSize: 15, border: 'none', cursor: (isLoading || LOCKED) ? 'not-allowed' : 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-                boxShadow: '0 4px 14px rgba(26,115,232,0.3)', marginTop: 8,
-                opacity: (isLoading || LOCKED) ? 0.7 : 1, transition: 'all 0.2s'
-            }}>
-              {isLoading ? <Loader2 size={18} className="animate-spin" /> : <Lock size={18} />}
-              {isLogin ? 'Login Securely' : 'Create Account'}
+            <button type="submit" disabled={isLoading || LOCKED} className="btn-submit">
+              {isLoading ? <Loader2 size={20} style={{ animation: 'spin 1s linear infinite' }} /> : <Lock size={20} />}
+              {isLogin ? 'AUTHENTICATE & ENTER' : 'GENERATE CREDENTIALS'}
             </button>
           </form>
 
         </div>
         
-        <div style={{ textAlign: 'center', marginTop: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-          <ShieldCheck size={16} color={DS.green} />
-          <span style={{ fontSize: 12.5, color: DS.textFaint, fontWeight: 500 }}>Protected by VoltGrievance Zero-Knowledge Protocol</span>
+        <div style={{ textAlign: 'center', marginTop: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+          <ShieldCheck size={18} color={DS.blue} />
+          <span style={{ fontSize: 13, color: DS.textFaint, fontWeight: 600 }}>End-to-End Cryptographic Validation Active</span>
         </div>
       </div>
+      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 };
