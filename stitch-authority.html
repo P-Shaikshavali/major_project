@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Authority Queue - E-Grievance System</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-container": "#e5e9eb",
+              "surface": "#f5f7f9",
+              "secondary-container": "#fdbcff",
+              "inverse-on-surface": "#9a9d9f",
+              "error": "#b41340",
+              "on-primary": "#f4f1ff",
+              "on-error": "#ffefef",
+              "error-dim": "#a70138",
+              "on-secondary-fixed": "#5e006c",
+              "surface-container-high": "#dfe3e6",
+              "secondary-fixed": "#fdbcff",
+              "on-secondary-container": "#7d008f",
+              "secondary-dim": "#8a009e",
+              "primary": "#4647d3",
+              "primary-dim": "#3939c7",
+              "on-secondary": "#ffeefb",
+              "on-primary-fixed-variant": "#0e009d",
+              "background": "#f5f7f9",
+              "surface-dim": "#d0d5d8",
+              "surface-variant": "#d9dde0",
+              "surface-container-lowest": "#ffffff",
+              "tertiary": "#0057bd",
+              "primary-fixed": "#9396ff",
+              "on-primary-container": "#0a0081",
+              "secondary": "#9e00b4",
+              "on-surface-variant": "#595c5e",
+              "on-surface": "#2c2f31",
+              "surface-container-low": "#eef1f3",
+              "outline": "#747779",
+              "surface-container-highest": "#d9dde0",
+              "tertiary-dim": "#004ca6",
+              "outline-variant": "#abadaf",
+              "primary-fixed-dim": "#8387ff",
+              "tertiary-fixed": "#8ab0ff",
+              "surface-tint": "#4647d3",
+              "on-secondary-fixed-variant": "#8c00a0",
+              "on-tertiary": "#f0f2ff",
+              "on-tertiary-fixed-variant": "#00377b",
+              "on-tertiary-container": "#002e6a",
+              "inverse-surface": "#0b0f10",
+              "error-container": "#f74b6d",
+              "secondary-fixed-dim": "#faa6ff",
+              "tertiary-container": "#8ab0ff",
+              "on-error-container": "#510017",
+              "on-background": "#2c2f31",
+              "inverse-primary": "#8083ff",
+              "on-tertiary-fixed": "#00163b",
+              "surface-bright": "#f5f7f9",
+              "primary-container": "#9396ff",
+              "on-primary-fixed": "#000000",
+              "tertiary-fixed-dim": "#73a2ff"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-header {
+            background: rgba(245, 247, 249, 0.6);
+            backdrop-filter: blur(20px);
+        }
+        .ghost-border {
+            border: 1px solid rgba(171, 173, 175, 0.15);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface font-body text-on-surface min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="docked full-width top-0 sticky z-50 bg-slate-50/60 dark:bg-slate-900/60 backdrop-blur-xl shadow-sm dark:shadow-none">
+<div class="flex items-center justify-between w-full px-6 py-4 max-w-full">
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-indigo-600 dark:text-indigo-400 hover:bg-slate-200/50 p-2 rounded-full transition-colors">menu</button>
+<h1 class="font-bold tracking-tight text-slate-900 dark:text-slate-50 text-xl font-headline">Authority Queue</h1>
+</div>
+<div class="flex items-center gap-3">
+<div class="hidden md:flex items-center gap-6 mr-8">
+<a class="text-indigo-700 dark:text-indigo-300 font-bold border-b-2 border-indigo-600 px-1 py-1" href="#">Dashboard</a>
+<a class="text-slate-500 dark:text-slate-400 font-medium hover:text-indigo-500" href="#">Analytics</a>
+<a class="text-slate-500 dark:text-slate-400 font-medium hover:text-indigo-500" href="#">Staff Directory</a>
+</div>
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-bold shadow-sm overflow-hidden border-2 border-white">
+<img alt="Authority Profile" class="w-full h-full object-cover" data-alt="Professional avatar of a college dean" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVF-6nLVY1pfNHsGbJeCRqJWrXEwk0G3n3i386rdx86mNqx9FKrj_14BJdc8E3yLwzf5mj8w0HmkdVa6AoS7J9zavB7Y7TaPkuEc397PTGdalmjTZUrGWenoBvtx2y-kRE5-ITjJgPnLSzhF7UA6_M6i6mwjik9E-Yv2x4tKwWI_GDKdr-3Aqom75RctH_IESDSl29v8Q5RzSFQ3gYVjSyxF4BxgrKYoTxUK1y6s2orefZvZ4Lg-6FgLuVN40JvC5z3eFv-OFMEzJu"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Filter Tabs (Sticky below TopAppBar) -->
+<nav class="sticky top-[72px] z-40 bg-surface/80 backdrop-blur-md px-6 py-4">
+<div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+<button class="px-6 py-2 bg-primary text-on-primary rounded-full font-semibold text-sm shadow-md shadow-primary/20 whitespace-nowrap">All Complaints</button>
+<button class="px-6 py-2 bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high rounded-full font-medium text-sm transition-colors whitespace-nowrap">Pending</button>
+<button class="px-6 py-2 bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high rounded-full font-medium text-sm transition-colors whitespace-nowrap">Escalated</button>
+<button class="px-6 py-2 bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high rounded-full font-medium text-sm transition-colors whitespace-nowrap">Resolved</button>
+</div>
+</nav>
+<!-- Main Content -->
+<main class="max-w-7xl mx-auto px-6 mt-6">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Complaint Card 1 -->
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm ghost-border flex flex-col justify-between hover:shadow-md transition-shadow group">
+<div>
+<div class="flex justify-between items-start mb-4">
+<span class="px-3 py-1 bg-tertiary-container text-on-tertiary-container rounded-full text-[10px] font-bold tracking-wider uppercase">Facilities</span>
+<div class="flex items-center gap-2 px-3 py-1 bg-yellow-100 dark:bg-yellow-900/30 rounded-full">
+<span class="w-2 h-2 rounded-full bg-yellow-500"></span>
+<span class="text-[10px] font-bold text-yellow-700">In Review</span>
+</div>
+</div>
+<h3 class="font-headline text-lg font-bold text-on-surface mb-2 group-hover:text-primary transition-colors">Library AC Malfunction</h3>
+<div class="space-y-1 mb-6">
+<p class="text-xs text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">fingerprint</span>
+                            ID: 2024-ST-01
+                        </p>
+<p class="text-xs text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">schedule</span>
+                            2 hrs ago
+                        </p>
+</div>
+</div>
+<button class="w-full py-3 bg-primary hover:bg-primary-dim text-on-primary rounded-xl font-semibold transition-all flex items-center justify-center gap-2 active:scale-95">
+                    Update Status
+                    <span class="material-symbols-outlined text-sm">edit_note</span>
+</button>
+</div>
+<!-- Complaint Card 2 -->
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm ghost-border flex flex-col justify-between hover:shadow-md transition-shadow group">
+<div>
+<div class="flex justify-between items-start mb-4">
+<span class="px-3 py-1 bg-secondary-container text-on-secondary-container rounded-full text-[10px] font-bold tracking-wider uppercase">Academic</span>
+<div class="flex items-center gap-2 px-3 py-1 bg-red-100 dark:bg-red-900/30 rounded-full">
+<span class="w-2 h-2 rounded-full bg-red-500"></span>
+<span class="text-[10px] font-bold text-red-700">Escalated</span>
+</div>
+</div>
+<h3 class="font-headline text-lg font-bold text-on-surface mb-2 group-hover:text-primary transition-colors">Course Credit Conflict</h3>
+<div class="space-y-1 mb-6">
+<p class="text-xs text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">fingerprint</span>
+                            ID: 2024-ST-88
+                        </p>
+<p class="text-xs text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">schedule</span>
+                            5 hrs ago
+                        </p>
+</div>
+</div>
+<button class="w-full py-3 bg-primary hover:bg-primary-dim text-on-primary rounded-xl font-semibold transition-all flex items-center justify-center gap-2 active:scale-95">
+                    Update Status
+                    <span class="material-symbols-outlined text-sm">edit_note</span>
+</button>
+</div>
+<!-- Complaint Card 3 -->
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm ghost-border flex flex-col justify-between hover:shadow-md transition-shadow group">
+<div>
+<div class="flex justify-between items-start mb-4">
+<span class="px-3 py-1 bg-tertiary-container text-on-tertiary-container rounded-full text-[10px] font-bold tracking-wider uppercase">Hostel</span>
+<div class="flex items-center gap-2 px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-full">
+<span class="w-2 h-2 rounded-full bg-slate-400"></span>
+<span class="text-[10px] font-bold text-slate-600">Pending</span>
+</div>
+</div>
+<h3 class="font-headline text-lg font-bold text-on-surface mb-2 group-hover:text-primary transition-colors">Wifi Connectivity Issues</h3>
+<div class="space-y-1 mb-6">
+<p class="text-xs text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">fingerprint</span>
+                            ID: 2024-ST-112
+                        </p>
+<p class="text-xs text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">schedule</span>
+                            10 hrs ago
+                        </p>
+</div>
+</div>
+<button class="w-full py-3 bg-primary hover:bg-primary-dim text-on-primary rounded-xl font-semibold transition-all flex items-center justify-center gap-2 active:scale-95">
+                    Update Status
+                    <span class="material-symbols-outlined text-sm">edit_note</span>
+</button>
+</div>
+<!-- Complaint Card 4 -->
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm ghost-border flex flex-col justify-between hover:shadow-md transition-shadow group">
+<div>
+<div class="flex justify-between items-start mb-4">
+<span class="px-3 py-1 bg-tertiary-container text-on-tertiary-container rounded-full text-[10px] font-bold tracking-wider uppercase">Cafeteria</span>
+<div class="flex items-center gap-2 px-3 py-1 bg-yellow-100 dark:bg-yellow-900/30 rounded-full">
+<span class="w-2 h-2 rounded-full bg-yellow-500"></span>
+<span class="text-[10px] font-bold text-yellow-700">In Review</span>
+</div>
+</div>
+<h3 class="font-headline text-lg font-bold text-on-surface mb-2 group-hover:text-primary transition-colors">Quality Assurance Request</h3>
+<div class="space-y-1 mb-6">
+<p class="text-xs text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">fingerprint</span>
+                            ID: 2024-ST-45
+                        </p>
+<p class="text-xs text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">schedule</span>
+                            1 day ago
+                        </p>
+</div>
+</div>
+<button class="w-full py-3 bg-primary hover:bg-primary-dim text-on-primary rounded-xl font-semibold transition-all flex items-center justify-center gap-2 active:scale-95">
+                    Update Status
+                    <span class="material-symbols-outlined text-sm">edit_note</span>
+</button>
+</div>
+<!-- Stats Card (Asymmetric Bento Element) -->
+<div class="lg:col-span-2 bg-gradient-to-br from-primary to-tertiary p-8 rounded-[2rem] text-on-primary relative overflow-hidden flex flex-col justify-between min-h-[250px] shadow-xl shadow-primary/20">
+<div class="absolute -top-10 -right-10 w-48 h-48 bg-white/10 rounded-full blur-3xl"></div>
+<div class="absolute -bottom-10 -left-10 w-48 h-48 bg-secondary/20 rounded-full blur-3xl"></div>
+<div class="relative z-10">
+<h2 class="font-headline text-3xl font-extrabold tracking-tight mb-2">Efficiency Overview</h2>
+<p class="text-on-primary/80 font-medium">You have resolved 85% of complaints this week.</p>
+</div>
+<div class="relative z-10 grid grid-cols-3 gap-4">
+<div class="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/10">
+<span class="block text-2xl font-black">24</span>
+<span class="text-[10px] uppercase tracking-wider font-bold opacity-70">New Items</span>
+</div>
+<div class="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/10">
+<span class="block text-2xl font-black">12</span>
+<span class="text-[10px] uppercase tracking-wider font-bold opacity-70">Escalated</span>
+</div>
+<div class="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/10">
+<span class="block text-2xl font-black">142</span>
+<span class="text-[10px] uppercase tracking-wider font-bold opacity-70">Resolved</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-6 pt-3 bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg shadow-[0_-10px_30px_rgba(0,0,0,0.05)] z-50 rounded-t-[2rem] md:hidden">
+<a class="flex flex-col items-center justify-center bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-200 rounded-2xl px-5 py-1.5 transition-transform hover:scale-110 active:scale-90" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">list_alt</span>
+<span class="text-[10px] font-semibold font-label">Queue</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 transition-transform hover:scale-110 active:scale-90" href="#">
+<span class="material-symbols-outlined">bar_chart</span>
+<span class="text-[10px] font-semibold font-label">Reports</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 transition-transform hover:scale-110 active:scale-90" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="text-[10px] font-semibold font-label">History</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 transition-transform hover:scale-110 active:scale-90" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-semibold font-label">Profile</span>
+</a>
+</nav>
+<!-- Desktop Sidebar Overlay Toggle (Concept Only) -->
+<div class="fixed left-6 bottom-6 hidden md:flex items-center gap-4 bg-white p-3 rounded-full shadow-lg border border-slate-100 z-50">
+<div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white">
+<span class="material-symbols-outlined">add</span>
+</div>
+<span class="pr-4 font-bold text-sm text-on-surface">New Broadcast</span>
+</div>
+</body></html>

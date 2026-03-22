@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Digital Complaint System | Student Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-container-low": "#eef1f3",
+                        "surface-container-highest": "#d9dde0",
+                        "tertiary-fixed-dim": "#73a2ff",
+                        "inverse-surface": "#0b0f10",
+                        "on-secondary": "#ffeefb",
+                        "surface-dim": "#d0d5d8",
+                        "tertiary": "#0057bd",
+                        "on-tertiary-fixed": "#00163b",
+                        "surface": "#f5f7f9",
+                        "primary-fixed-dim": "#8387ff",
+                        "on-tertiary-fixed-variant": "#00377b",
+                        "on-primary-fixed-variant": "#0e009d",
+                        "inverse-primary": "#8083ff",
+                        "secondary-container": "#fdbcff",
+                        "on-primary-container": "#0a0081",
+                        "surface-variant": "#d9dde0",
+                        "on-tertiary-container": "#002e6a",
+                        "surface-container": "#e5e9eb",
+                        "secondary": "#9e00b4",
+                        "on-error": "#ffefef",
+                        "on-secondary-container": "#7d008f",
+                        "on-primary": "#f4f1ff",
+                        "on-error-container": "#510017",
+                        "error": "#b41340",
+                        "on-surface-variant": "#595c5e",
+                        "tertiary-dim": "#004ca6",
+                        "primary": "#4647d3",
+                        "inverse-on-surface": "#9a9d9f",
+                        "on-surface": "#2c2f31",
+                        "on-background": "#2c2f31",
+                        "outline-variant": "#abadaf",
+                        "on-tertiary": "#f0f2ff",
+                        "on-secondary-fixed": "#5e006c",
+                        "error-container": "#f74b6d",
+                        "surface-container-lowest": "#ffffff",
+                        "outline": "#747779",
+                        "error-dim": "#a70138",
+                        "surface-container-high": "#dfe3e6",
+                        "primary-fixed": "#9396ff",
+                        "tertiary-container": "#8ab0ff",
+                        "on-primary-fixed": "#000000",
+                        "primary-container": "#9396ff",
+                        "secondary-dim": "#8a009e",
+                        "secondary-fixed": "#fdbcff",
+                        "primary-dim": "#3939c7",
+                        "tertiary-fixed": "#8ab0ff",
+                        "on-secondary-fixed-variant": "#8c00a0",
+                        "surface-bright": "#f5f7f9",
+                        "secondary-fixed-dim": "#faa6ff",
+                        "background": "#f5f7f9",
+                        "surface-tint": "#4647d3"
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(171, 173, 175, 0.15);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body min-h-screen pb-24 md:pb-0">
+<!-- TopAppBar -->
+<header class="sticky top-0 z-50 w-full bg-white/60 backdrop-blur-xl bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border-b border-white/20 shadow-[0_20px_40px_rgba(44,47,49,0.06)]">
+<div class="flex justify-between items-center px-6 py-4 w-full max-w-7xl mx-auto">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center overflow-hidden">
+<img alt="Student Profile Photo" class="w-full h-full object-cover" data-alt="Professional student profile portrait photo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDI46N_e07rq1q8CY9jjbK33RMUhEKCvoF8ZiMUYe0xjAg_ZVJYvLShwpF3spSpAH28sQa6Nq-IGL6ZN3mEkuG0iB79GADnHAfxNRTX35C1Id-IMM_iIqu3hp7pagCWsx_x0Xx8-VLbnIhj6RUoA7AsSRR4KSFKrgsUA2HdMJqMAMNvo8nzwCR5uIherY-EK53qR1rm6AbHpxHsAmaRVu6GZ0ipcTfn5jrJrBozBk46O6ZnbRYUTJ-IIP7uWz-r3-gR8zuCbatVndIZ"/>
+</div>
+<h1 class="text-xl font-extrabold tracking-tighter text-indigo-700 font-headline">Digital Complaint System</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-xl text-indigo-600 hover:bg-indigo-50 transition-all active:scale-95">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<div class="hidden md:flex gap-6 items-center ml-8">
+<a class="text-indigo-700 font-bold font-headline transition-all" href="#">Dashboard</a>
+<a class="text-slate-500 hover:text-indigo-500 font-medium transition-all" href="#">Announcements</a>
+<a class="text-slate-500 hover:text-indigo-500 font-medium transition-all" href="#">Guidelines</a>
+</div>
+</div>
+</div>
+</header>
+<main class="max-w-7xl mx-auto px-6 py-10">
+<!-- Hero Section -->
+<section class="mb-12 relative">
+<div class="absolute -top-20 -left-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl"></div>
+<div class="absolute -bottom-10 right-0 w-96 h-96 bg-secondary/5 rounded-full blur-3xl"></div>
+<div class="relative z-10">
+<p class="text-primary font-bold tracking-widest uppercase text-xs mb-2">Student Dashboard</p>
+<h2 class="text-5xl font-extrabold font-headline tracking-tight text-on-surface mb-4">Welcome back, Alex!</h2>
+<p class="text-on-surface-variant max-w-2xl text-lg">Your academic concerns are our priority. Track your active cases or start a new resolution process below.</p>
+</div>
+</section>
+<!-- KPI Bento Grid -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+<!-- Total Complaints -->
+<div class="glass-card rounded-[2rem] p-8 transition-all hover:translate-y-[-4px]">
+<div class="flex justify-between items-start mb-6">
+<div class="w-12 h-12 rounded-2xl bg-primary-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="folder_open">folder_open</span>
+</div>
+<span class="text-xs font-bold text-primary bg-primary/10 px-3 py-1 rounded-full uppercase tracking-tighter">Lifetime</span>
+</div>
+<h3 class="text-slate-500 font-medium mb-1">Total Complaints</h3>
+<div class="text-4xl font-extrabold font-headline text-on-surface">24</div>
+</div>
+<!-- In Progress -->
+<div class="glass-card rounded-[2rem] p-8 transition-all hover:translate-y-[-4px]">
+<div class="flex justify-between items-start mb-6">
+<div class="w-12 h-12 rounded-2xl bg-tertiary-container flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined" data-icon="pending_actions">pending_actions</span>
+</div>
+<span class="text-xs font-bold text-tertiary bg-tertiary/10 px-3 py-1 rounded-full uppercase tracking-tighter">Priority</span>
+</div>
+<h3 class="text-slate-500 font-medium mb-1">In Progress</h3>
+<div class="text-4xl font-extrabold font-headline text-on-surface">03</div>
+</div>
+<!-- Resolved -->
+<div class="glass-card rounded-[2rem] p-8 transition-all hover:translate-y-[-4px]">
+<div class="flex justify-between items-start mb-6">
+<div class="w-12 h-12 rounded-2xl bg-secondary-container flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined" data-icon="task_alt">task_alt</span>
+</div>
+<span class="text-xs font-bold text-secondary bg-secondary/10 px-3 py-1 rounded-full uppercase tracking-tighter">Success</span>
+</div>
+<h3 class="text-slate-500 font-medium mb-1">Resolved</h3>
+<div class="text-4xl font-extrabold font-headline text-on-surface">21</div>
+</div>
+</section>
+<!-- Main Content Area -->
+<section class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-20">
+<!-- Recent Complaints (2/3 width) -->
+<div class="lg:col-span-2 space-y-6">
+<div class="flex items-center justify-between">
+<h3 class="text-2xl font-bold font-headline text-on-surface">Recent Complaints</h3>
+<button class="text-primary font-bold text-sm flex items-center gap-1 hover:gap-2 transition-all">
+                        View All <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+<div class="bg-surface-container-low rounded-[2rem] overflow-hidden p-2">
+<div class="overflow-x-auto">
+<table class="w-full border-separate border-spacing-y-2">
+<thead>
+<tr class="text-left text-on-surface-variant text-xs uppercase tracking-widest font-bold">
+<th class="px-6 py-4">ID</th>
+<th class="px-6 py-4">Category</th>
+<th class="px-6 py-4">Date</th>
+<th class="px-6 py-4">Status</th>
+</tr>
+</thead>
+<tbody>
+<!-- Item 1 -->
+<tr class="bg-surface-container-lowest transition-all hover:bg-white group cursor-pointer">
+<td class="px-6 py-5 rounded-l-2xl font-bold text-primary">#GRV-2941</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-slate-400">school</span>
+<span class="font-medium text-on-surface">Academic</span>
+</div>
+</td>
+<td class="px-6 py-5 text-on-surface-variant">Oct 24, 2023</td>
+<td class="px-6 py-5 rounded-r-2xl">
+<span class="px-4 py-1.5 rounded-xl text-xs font-bold bg-tertiary-container/30 text-tertiary inline-flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                                            Review
+                                        </span>
+</td>
+</tr>
+<!-- Item 2 -->
+<tr class="bg-surface-container-lowest transition-all hover:bg-white group cursor-pointer">
+<td class="px-6 py-5 rounded-l-2xl font-bold text-primary">#GRV-2882</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-slate-400">home</span>
+<span class="font-medium text-on-surface">Hostel</span>
+</div>
+</td>
+<td class="px-6 py-5 text-on-surface-variant">Oct 20, 2023</td>
+<td class="px-6 py-5 rounded-r-2xl">
+<span class="px-4 py-1.5 rounded-xl text-xs font-bold bg-amber-100 text-amber-700 inline-flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                                            Pending
+                                        </span>
+</td>
+</tr>
+<!-- Item 3 -->
+<tr class="bg-surface-container-lowest transition-all hover:bg-white group cursor-pointer">
+<td class="px-6 py-5 rounded-l-2xl font-bold text-primary">#GRV-2715</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-slate-400">payments</span>
+<span class="font-medium text-on-surface">Finance</span>
+</div>
+</td>
+<td class="px-6 py-5 text-on-surface-variant">Oct 15, 2023</td>
+<td class="px-6 py-5 rounded-r-2xl">
+<span class="px-4 py-1.5 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-700 inline-flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                            Resolved
+                                        </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Quick Action Card (1/3 width) -->
+<div class="lg:col-span-1">
+<div class="sticky top-28 space-y-6">
+<div class="p-8 rounded-[2rem] bg-indigo-600 text-white relative overflow-hidden shadow-2xl shadow-indigo-200">
+<div class="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
+<h4 class="text-2xl font-extrabold font-headline mb-4 relative z-10">Need Assistance?</h4>
+<p class="text-indigo-100 mb-8 relative z-10">Submit a new grievance or connect with a support representative immediately.</p>
+<div class="space-y-3 relative z-10">
+<button class="w-full py-4 bg-white text-indigo-600 font-bold rounded-2xl flex items-center justify-center gap-2 hover:bg-indigo-50 transition-all active:scale-95 shadow-lg">
+<span class="material-symbols-outlined">add_circle</span>
+                                File New Complaint
+                            </button>
+<button class="w-full py-4 bg-indigo-500/50 text-white font-bold rounded-2xl flex items-center justify-center gap-2 hover:bg-indigo-500 transition-all active:scale-95 border border-white/20">
+<span class="material-symbols-outlined">smart_toy</span>
+                                Chat with Support
+                            </button>
+</div>
+</div>
+<div class="glass-card p-8 rounded-[2rem]">
+<h4 class="text-lg font-bold font-headline mb-4">Grievance Trends</h4>
+<div class="space-y-4">
+<div class="flex justify-between items-center">
+<span class="text-sm text-on-surface-variant">Response Time</span>
+<span class="text-sm font-bold text-on-surface">~48 Hours</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[85%] rounded-full"></div>
+</div>
+<p class="text-[10px] text-on-surface-variant leading-relaxed">Your issues are resolved 15% faster than the college average this semester.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (Shared Component) -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-6 pt-3 bg-white/70 backdrop-blur-2xl border-t border-indigo-100/20 shadow-[0_-10px_30px_rgba(0,0,0,0.04)] z-50 rounded-t-[2rem]">
+<!-- Home (Active) -->
+<a class="flex flex-col items-center justify-center bg-indigo-600 text-white rounded-2xl px-4 py-2 transition-all transform scale-110" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="text-[10px] font-medium font-['Inter'] tracking-wide uppercase mt-1">Home</span>
+</a>
+<!-- Submit -->
+<a class="flex flex-col items-center justify-center text-slate-400 px-4 py-2 hover:text-indigo-500 transition-transform duration-200 active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="add_circle">add_circle</span>
+<span class="text-[10px] font-medium font-['Inter'] tracking-wide uppercase mt-1">Submit</span>
+</a>
+<!-- My Cases -->
+<a class="flex flex-col items-center justify-center text-slate-400 px-4 py-2 hover:text-indigo-500 transition-transform duration-200 active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="text-[10px] font-medium font-['Inter'] tracking-wide uppercase mt-1">My Cases</span>
+</a>
+<!-- Support -->
+<a class="flex flex-col items-center justify-center text-slate-400 px-4 py-2 hover:text-indigo-500 transition-transform duration-200 active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="smart_toy">smart_toy</span>
+<span class="text-[10px] font-medium font-['Inter'] tracking-wide uppercase mt-1">Support</span>
+</a>
+<!-- Logout -->
+<a class="flex flex-col items-center justify-center text-slate-400 px-4 py-2 hover:text-indigo-500 transition-transform duration-200 active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span class="text-[10px] font-medium font-['Inter'] tracking-wide uppercase mt-1">Logout</span>
+</a>
+</nav>
+</body></html>
