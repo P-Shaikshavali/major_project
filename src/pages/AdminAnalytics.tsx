@@ -1,122 +1,120 @@
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
-import { ListChecks, Timer, AlertTriangle, ShieldCheck, Users } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { LayoutDashboard, Clock, AlertTriangle, Users, ShieldCheck } from 'lucide-react';
+import api from '../services/api';
 
-const Card = ({ children, style = {} }: any) => (
-  <div className="card-hover animate-up" style={{ background: 'var(--surface)', borderRadius: 'var(--radius)', boxShadow: 'var(--shadow)', border: '1px solid var(--border)', ...style }}>
-    {children}
-  </div>
-);
+const EM = '#10B981';
+const CHART_COLORS = ['#10B981','#3B82F6','#8B5CF6','#F59E0B'];
+const MOCK_STATS = { total:1024, avgResolution:'1.2d', escalated:7, activeUsers:234 };
 
 const AdminAnalytics = () => {
-  const pieData = [
-    { name: 'Hostel',   value: 38, color: '#2563EB' },
-    { name: 'Academic', value: 29, color: '#8B5CF6' },
-    { name: 'Admin',    value: 21, color: '#10B981' },
-    { name: 'Safety',   value: 12, color: '#F59E0B' },
-  ];
-  const barData = [
-    { m: 'Jan', v: 65 }, { m: 'Feb', v: 59 }, { m: 'Mar', v: 80 },
-    { m: 'Apr', v: 81 }, { m: 'May', v: 56 }, { m: 'Jun', v: 72 },
-  ];
+  const [stats, setStats] = useState<any>(MOCK_STATS);
+  const [catData, setCatData] = useState([
+    { name:'Hostel (38%)', value:38 },{ name:'Academic (29%)', value:29 },
+    { name:'Admin (21%)', value:21 },{ name:'Safety (12%)', value:12 },
+  ]);
+  const [monthlyData] = useState([
+    {month:'Jan',count:62},{month:'Feb',count:58},{month:'Mar',count:78},
+    {month:'Apr',count:76},{month:'May',count:54},{month:'Jun',count:70},
+  ]);
   const clusters = [
-    { category: 'Hostel WiFi', count: 47, severity: 'High', color: 'var(--amber)', bg: 'var(--amber-light)' },
-    { category: 'Exam Re-evaluation', count: 31, severity: 'Medium', color: 'var(--blue)', bg: 'var(--blue-light)' },
-    { category: 'Fee Portal Issues', count: 24, severity: 'Low', color: 'var(--green)', bg: 'var(--green-light)' },
-    { category: 'Campus Safety', count: 18, severity: 'Critical', color: 'var(--red)', bg: 'var(--red-light)' },
+    { cat:'Hostel WiFi', count:47, sev:'High', color:'#F59E0B', bg:'#FFFBEB' },
+    { cat:'Exam Re-evaluation', count:31, sev:'Medium', color:EM, bg:'#ECFDF5' },
+    { cat:'Fee Portal Issues', count:24, sev:'Low', color:'#3B82F6', bg:'#EFF6FF' },
+    { cat:'Campus Safety', count:18, sev:'Critical', color:'#EF4444', bg:'#FEF2F2' },
+  ];
+
+  useEffect(() => {
+    api.get('/dashboard/analytics').then(r => { setStats(r.data); }).catch(console.error);
+  }, []);
+
+  const kpis = [
+    { icon:<LayoutDashboard size={18}/>, label:'Total Complaints', value:stats?.total??1024, color:EM, bg:'#ECFDF5' },
+    { icon:<Clock size={18}/>,           label:'Avg Resolution',   value:stats?.avgResolution??'1.2d', color:'#3B82F6', bg:'#EFF6FF' },
+    { icon:<AlertTriangle size={18}/>,   label:'Escalated Today',  value:stats?.escalated??7, color:'#EF4444', bg:'#FEF2F2' },
+    { icon:<Users size={18}/>,           label:'Active Users',     value:stats?.activeUsers??234, color:'#8B5CF6', bg:'#F5F3FF' },
   ];
 
   return (
-    <div style={{ padding: '28px 32px', minHeight: '100vh', background: 'var(--bg)' }}>
-      {/* Header */}
-      <div className="mb-7">
-        <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--blue)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Administration</p>
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text)' }}>System Analytics</h1>
-        <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>Institution-level grievance metrics and AI clustering insights.</p>
+    <div style={{ padding:'28px 32px', minHeight:'100vh', background:'var(--bg)' }}>
+      <div style={{ marginBottom:24 }}>
+        <p style={{ fontSize:11, fontWeight:700, color:EM, letterSpacing:'0.08em', textTransform:'uppercase', marginBottom:4 }}>Administration</p>
+        <h1 style={{ fontSize:23, fontWeight:800, color:'#111827', letterSpacing:'-0.01em' }}>System Analytics</h1>
+        <p style={{ fontSize:13, color:'#6B7280', marginTop:3 }}>Institution-level grievance metrics and AI clustering insights.</p>
       </div>
 
-      {/* KPI Row */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        {[
-          { icon: <ListChecks size={17} />, label: 'Total Complaints', value: '1,024', color: 'var(--blue)',   bg: 'var(--blue-light)' },
-          { icon: <Timer size={17} />,      label: 'Avg Resolution',   value: '1.2d',  color: 'var(--green)',  bg: 'var(--green-light)' },
-          { icon: <AlertTriangle size={17} />, label: 'Escalated Today', value: '7',  color: 'var(--amber)',  bg: 'var(--amber-light)' },
-          { icon: <Users size={17} />,      label: 'Active Users',     value: '234',   color: 'var(--purple)', bg: 'var(--purple-light)' },
-        ].map((m, i) => (
-          <Card key={i} style={{ padding: '18px 20px' }}>
-            <div style={{ width: 36, height: 36, borderRadius: 8, background: m.bg, color: m.color, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
-              {m.icon}
-            </div>
-            <p style={{ fontSize: 24, fontWeight: 700, color: 'var(--text)', lineHeight: 1 }}>{m.value}</p>
-            <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>{m.label}</p>
-          </Card>
+      {/* KPIs */}
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:16, marginBottom:20 }}>
+        {kpis.map((k,i) => (
+          <div key={i} className="card animate-up" style={{ padding:'20px 22px', position:'relative', overflow:'hidden' }}>
+            <div style={{ position:'absolute', top:0, left:0, right:0, height:3, background:`linear-gradient(90deg,${k.color},${k.color}55)` }}/>
+            <div style={{ width:36, height:36, borderRadius:10, background:k.bg, color:k.color, display:'flex', alignItems:'center', justifyContent:'center', marginBottom:12 }}>{k.icon}</div>
+            <p style={{ fontSize:27, fontWeight:800, color:'#111827', lineHeight:1 }}>{k.value}</p>
+            <p style={{ fontSize:11.5, color:'#6B7280', marginTop:5, fontWeight:500 }}>{k.label}</p>
+          </div>
         ))}
       </div>
 
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-        <Card style={{ padding: '20px 24px' }}>
-          <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', marginBottom: 16 }}>Complaints by Category</p>
-          <div style={{ height: 200 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={pieData} innerRadius={58} outerRadius={82} paddingAngle={3} dataKey="value">
-                  {pieData.map((e, i) => <Cell key={i} fill={e.color} stroke="transparent" />)}
-                </Pie>
-                <Tooltip contentStyle={{ borderRadius: 8, border: 'none', boxShadow: 'var(--shadow-md)', fontSize: 12 }} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="flex flex-wrap gap-3 justify-center mt-2">
-            {pieData.map(d => (
-              <div key={d.name} className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--text-muted)' }}>
-                <span style={{ width: 8, height: 8, borderRadius: '50%', background: d.color, display: 'inline-block' }} />
-                {d.name} ({d.value}%)
+      {/* Charts */}
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 1.4fr', gap:16, marginBottom:20 }}>
+        <div className="card" style={{ padding:'20px 22px' }}>
+          <p style={{ fontSize:13, fontWeight:700, color:'#111827', marginBottom:14 }}>Complaints by Category</p>
+          <ResponsiveContainer width="100%" height={200}>
+            <PieChart>
+              <Pie data={catData} cx="50%" cy="50%" innerRadius={55} outerRadius={85} dataKey="value" paddingAngle={3}>
+                {catData.map((_,i) => <Cell key={i} fill={CHART_COLORS[i%CHART_COLORS.length]}/>)}
+              </Pie>
+              <Tooltip contentStyle={{ fontSize:12,borderRadius:8,border:'none',boxShadow:'0 4px 16px rgba(0,0,0,0.1)' }}/>
+            </PieChart>
+          </ResponsiveContainer>
+          <div style={{ display:'flex', flexWrap:'wrap', gap:'5px 12px', justifyContent:'center' }}>
+            {catData.map((c,i) => (
+              <div key={i} style={{ display:'flex', alignItems:'center', gap:5 }}>
+                <span style={{ width:7, height:7, borderRadius:'50%', background:CHART_COLORS[i%CHART_COLORS.length], display:'inline-block' }}/>
+                <span style={{ fontSize:11, color:'#6B7280' }}>{c.name}</span>
               </div>
             ))}
           </div>
-        </Card>
-
-        <Card style={{ padding: '20px 24px' }}>
-          <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', marginBottom: 16 }}>Monthly Volume</p>
-          <div style={{ height: 200 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={barData} margin={{ top: 0, right: 0, left: -26, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                <XAxis dataKey="m" axisLine={false} tickLine={false} tick={{ fill: 'var(--text-faint)', fontSize: 11 }} dy={6} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fill: 'var(--text-faint)', fontSize: 11 }} />
-                <Tooltip contentStyle={{ borderRadius: 8, border: 'none', boxShadow: 'var(--shadow-md)', fontSize: 12 }} cursor={{ fill: 'var(--blue-light)', radius: 4 }} />
-                <Bar dataKey="v" fill="var(--blue)" radius={[5, 5, 0, 0]} barSize={24} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
+        </div>
+        <div className="card" style={{ padding:'20px 22px' }}>
+          <p style={{ fontSize:13, fontWeight:700, color:'#111827', marginBottom:14 }}>Monthly Volume</p>
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={monthlyData} barSize={28}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false}/>
+              <XAxis dataKey="month" tick={{ fontSize:11, fill:'#9CA3AF' }} axisLine={false} tickLine={false}/>
+              <YAxis tick={{ fontSize:11, fill:'#9CA3AF' }} axisLine={false} tickLine={false} domain={[0,100]}/>
+              <Tooltip contentStyle={{ fontSize:12,borderRadius:8,border:'none',boxShadow:'0 4px 16px rgba(0,0,0,0.1)' }}/>
+              <Bar dataKey="count" fill={EM} radius={[6,6,0,0]}/>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       </div>
 
-      {/* AI Cluster Insights */}
-      <Card style={{ padding: '20px 24px' }}>
-        <div className="flex items-center gap-2 mb-5">
-          <div style={{ width: 28, height: 28, borderRadius: 8, background: 'var(--purple-light)', color: 'var(--purple)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <ShieldCheck size={14} />
+      {/* AI Clustering */}
+      <div className="card" style={{ padding:'20px 24px' }}>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:16 }}>
+          <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+            <ShieldCheck size={15} style={{ color:EM }}/>
+            <p style={{ fontSize:13, fontWeight:700, color:'#111827' }}>AI Complaint Clustering Insights</p>
           </div>
-          <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>AI Complaint Clustering Insights</p>
-          <span style={{ marginLeft: 'auto', fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 4, background: 'var(--purple-light)', color: 'var(--purple)' }}>Secured</span>
+          <span style={{ fontSize:10, fontWeight:700, padding:'3px 10px', borderRadius:99, background:'#ECFDF5', color:EM, letterSpacing:'0.05em' }}>AI-SECURED</span>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-          {clusters.map((c, i) => (
-            <div key={i} style={{ padding: '14px 16px', borderRadius: 10, background: c.bg, border: `1px solid ${c.color}20` }}>
-              <div className="flex items-start justify-between mb-2">
-                <p style={{ fontSize: 13, fontWeight: 600, color: c.color }}>{c.category}</p>
-                <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: `${c.color}22`, color: c.color }}>{c.severity}</span>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:14 }}>
+          {clusters.map((cl,i) => (
+            <div key={i} style={{ padding:'16px 18px', borderRadius:13, background:cl.bg, position:'relative', overflow:'hidden' }}>
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:10 }}>
+                <p style={{ fontSize:13, fontWeight:700, color:cl.color, lineHeight:1.2 }}>{cl.cat}</p>
+                <span style={{ fontSize:10, fontWeight:700, padding:'2px 8px', borderRadius:99, background:'rgba(0,0,0,0.08)', color:cl.color, flexShrink:0 }}>{cl.sev}</span>
               </div>
-              <p style={{ fontSize: 22, fontWeight: 800, color: c.color }}>{c.count}</p>
-              <p style={{ fontSize: 11, color: c.color, opacity: 0.7, marginTop: 2 }}>complaints clustered</p>
-              <div style={{ height: 3, background: `${c.color}30`, borderRadius: 99, marginTop: 10, overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${(c.count / 50) * 100}%`, background: c.color, borderRadius: 99 }} />
+              <p style={{ fontSize:28, fontWeight:800, color:cl.color, lineHeight:1 }}>{cl.count}</p>
+              <p style={{ fontSize:10.5, color:cl.color, opacity:0.7, marginTop:3 }}>complaints clustered</p>
+              <div style={{ marginTop:12, height:4, background:'rgba(0,0,0,0.06)', borderRadius:99, overflow:'hidden' }}>
+                <div style={{ width:`${Math.min((cl.count/50)*100,100)}%`, height:'100%', background:cl.color, borderRadius:99 }}/>
               </div>
             </div>
           ))}
         </div>
-      </Card>
+      </div>
     </div>
   );
 };
