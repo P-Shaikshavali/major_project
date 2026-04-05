@@ -2,16 +2,21 @@ namespace EGrievanceApi.Services
 {
     public class GrievanceRoutingService : IGrievanceRoutingService
     {
+        /// <summary>
+        /// Maps complaint category to the responsible authority role.
+        /// High priority complaints are additionally flagged via IsEscalated
+        /// so Admin dashboards always surface them.
+        /// </summary>
         public string DetermineAssignedRole(string category)
         {
-            // Maps the AI output to an administrative Role
             return category switch
             {
-                "Hostel" => "Warden",
-                "Academic" => "Faculty",
-                "Facilities" => "Admin",
-                "Safety" => "Dean",
-                _ => "Admin"
+                "Hostel"     => "Warden",     // Hostel → Warden
+                "Academic"   => "Faculty",    // Academic → Faculty
+                "Department" => "HOD",        // Department → HOD
+                "Facilities" => "Admin",      // Facilities → Admin
+                "Safety"     => "Dean",       // Safety → Dean
+                _            => "Admin"       // Default fallback
             };
         }
     }

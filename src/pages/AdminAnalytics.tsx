@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { LayoutDashboard, Clock, AlertTriangle, Users, ShieldCheck, Shield } from 'lucide-react';
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
+import { 
+  LayoutDashboard, Clock, AlertTriangle, Users, 
+  ShieldCheck, Shield, EyeOff, Eye, RefreshCw 
+} from 'lucide-react';
 import api from '../services/api';
 
-// ── Stitch "Emerald Sentinel" Design Tokens ──────────────────────────────────
 const DS = {
   bg:            '#F8F9FA',
   surface:       '#FFFFFF',
@@ -16,153 +18,173 @@ const DS = {
   textMuted:     '#414754',
   textFaint:     '#727785',
   blue:          '#1A73E8',
-  blueLight:     '#EBF3FD',
   amber:         '#9E4300',
-  amberLight:    '#FFDBCB',
   red:           '#B91C1C',
-  redLight:      '#FEF2F2',
   shadowAmbient: '0 20px 40px rgba(44,47,49,0.06)',
   radiusCard:    '20px',
   radiusBtn:     '12px',
 };
 
-const CHART_COLORS = [DS.emerald, DS.blue, '#8B5CF6', DS.amber];
-const MOCK_STATS = { total:1024, avgResolution:'1.2d', escalated:7, activeUsers:234 };
+const CHART_COLORS = [DS.emerald, DS.blue, '#8B5CF6', DS.amber, DS.red];
 
 const AdminAnalytics = () => {
-  const [stats, setStats] = useState<any>(MOCK_STATS);
-  const [catData] = useState([
-    { name:'Hostel (38%)', value:38 },{ name:'Academic (29%)', value:29 },
-    { name:'Admin (21%)', value:21 },{ name:'Safety (12%)', value:12 },
-  ]);
-  const [monthlyData] = useState([
-    {month:'Jan',count:62},{month:'Feb',count:58},{month:'Mar',count:78},
-    {month:'Apr',count:76},{month:'May',count:54},{month:'Jun',count:70},
-  ]);
-  const clusters = [
-    { cat:'Hostel WiFi', count:47, sev:'High', color:DS.amber, bg:DS.amberLight },
-    { cat:'Exam Re-eval', count:31, sev:'Medium', color:DS.emerald, bg:DS.emeraldLight },
-    { cat:'Fee Portal', count:24, sev:'Low', color:DS.blue, bg:DS.blueLight },
-    { cat:'Campus Safety', count:18, sev:'Critical', color:DS.red, bg:DS.redLight },
-  ];
+  const [view, setView] = useState<'analytics' | 'queue'>('analytics');
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [revealedIds, setRevealedIds] = useState<Record<string, any>>({});
 
   useEffect(() => {
-    api.get('/dashboard/analytics').then(r => { setStats(r.data); }).catch(console.error);
+    fetchData();
   }, []);
 
-  const kpis = [
-    { icon:<LayoutDashboard size={22}/>, label:'Total Complaints', value:stats?.total??1024,      color:DS.emerald, bg:DS.emeraldLight },
-    { icon:<Clock size={22}/>,           label:'Avg Resolution Time',value:stats?.avgResolution??'1.2d', color:DS.blue,    bg:DS.blueLight },
-    { icon:<AlertTriangle size={22}/>,   label:'Escalated Today',  value:stats?.escalated??7,     color:DS.red,     bg:DS.redLight },
-    { icon:<Users size={22}/>,           label:'Active Users',     value:stats?.activeUsers??234, color:'#8B5CF6',  bg:'#F5F3FF' },
-  ];
-
-  const cardStyle = {
-    background: DS.surface, borderRadius: DS.radiusCard, padding: 32, 
-    boxShadow: DS.shadowAmbient, border: '1px solid rgba(255,255,255,0.8)',
-    display: 'flex', flexDirection: 'column' as const
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get('/admin/dashboard');
+      setData(res.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
+  const handleRevealIdentity = async (trackingId: string) => {
+    try {
+      const reason = window.prompt("ROOT SECURITY INCIDENT: Provide administrative justification for unlocking this user's identity:");
+      if (!reason) return;
+      const res = await api.post('/admin/reveal-identity', { trackingId, reason });
+      setRevealedIds(prev => ({ ...prev, [trackingId]: res.data }));
+      alert("Encryption Broken. Footprint Authored to Audit Trail.");
+    } catch (err: any) {
+      alert("Failed to decrypt: " + err.response?.data?.message);
+    }
+  };
+
+  const cStats = data?.globalStats || { totalComplaints: 0, avgResolutionDays: 0, escalatedToday: 0, activeUsers: 0 };
+  const kpis = [
+    { icon: <LayoutDashboard size={22}/>, label: 'Global Volume', value: cStats.totalComplaints, color: DS.emerald, bg: DS.emeraldLight },
+    { icon: <Clock size={22}/>, label: 'Avg Resolution', value: (cStats.avgResolutionDays || 0) + ' Days', color: DS.blue, bg: '#EBF3FD' },
+    { icon: <AlertTriangle size={22}/>, label: 'Escalation Breach', value: cStats.escalatedToday, color: DS.red, bg: '#FEF2F2' },
+    { icon: <Users size={22}/>, label: 'Platform Accounts', value: cStats.activeUsers, color: '#8B5CF6', bg: '#F5F3FF' },
+  ];
+
+  const cardStyle = { background: DS.surface, borderRadius: DS.radiusCard, padding: 32, boxShadow: DS.shadowAmbient, display: 'flex', flexDirection: 'column' as const };
+
+  if (loading) return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: 'transparent' }}>
+      <RefreshCw size={40} className="spin" color={DS.blue} />
+    </div>
+  );
+
   return (
-    <div style={{ padding:'40px 48px', minHeight:'100vh', background:DS.bg, fontFamily:"'Inter', sans-serif" }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600&display=swap');`}</style>
+    <div style={{ flex: 1, padding: '40px 48px', minHeight: '100vh', background: 'transparent', fontFamily: "'Inter', sans-serif" }}>
+      <style>{`
+        .spin { animation: spin 2s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+      `}</style>
       
-      {/* Header */}
-      <div style={{ marginBottom:32, display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
+      <div style={{ marginBottom: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <div style={{ display:'inline-flex', alignItems:'center', gap:6, background:DS.emeraldLight, padding:'4px 12px', borderRadius:20, marginBottom:12 }}>
-            <span style={{ width:6, height:6, borderRadius:'50%', background:DS.emerald }} />
-            <span style={{ fontSize:11, fontWeight:700, color:DS.emeraldDark, letterSpacing:'0.06em', textTransform:'uppercase' }}>Administration</span>
-          </div>
-          <h1 style={{ fontFamily:"'Manrope', sans-serif", fontSize:32, fontWeight:800, color:DS.text, letterSpacing:'-0.02em', margin:0 }}>
-            System Analytics
+          <h1 style={{ fontFamily: "'Manrope', sans-serif", fontSize: 28, fontWeight: 800, color: DS.text, margin: 0 }}>
+            Universal Operations Command
           </h1>
-          <p style={{ fontSize:15, color:DS.textMuted, marginTop:8 }}>Institution-level grievance metrics and AI clustering insights.</p>
+        </div>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button onClick={() => setView('analytics')} style={{ padding: '8px 16px', borderRadius: 8, background: view==='analytics' ? DS.text : DS.surfaceLow, color: view==='analytics' ? '#fff' : DS.textMuted, fontWeight: 700, border: 'none', cursor: 'pointer', fontSize: 13 }}>Telemetry</button>
+          <button onClick={() => setView('queue')} style={{ padding: '8px 16px', borderRadius: 8, background: view==='queue' ? DS.text : DS.surfaceLow, color: view==='queue' ? '#fff' : DS.textMuted, fontWeight: 700, border: 'none', cursor: 'pointer', fontSize: 13 }}>Matrix</button>
+          <button onClick={() => fetchData()} style={{ background: DS.surface, border: `1px solid ${DS.surfaceLow}`, padding: '8px 12px', borderRadius: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600 }}>
+            <RefreshCw size={14} style={{ color: DS.blue }} /> Sync
+          </button>
         </div>
       </div>
 
-      {/* FAQs / Missing feature Note: I'll stick to the actual code logic but style it up */}
-
-      {/* KPIs */}
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:24, marginBottom:32 }}>
-        {kpis.map((k,i) => (
-          <div key={i} style={{ ...cardStyle, padding:'24px', gap:16, borderTop:`3px solid ${k.color}` }}>
-            <div style={{ width:44, height:44, borderRadius:14, background:k.bg, color:k.color, display:'flex', alignItems:'center', justifyContent:'center' }}>{k.icon}</div>
-            <div>
-              <p style={{ fontFamily:"'Manrope', sans-serif", fontSize:32, fontWeight:800, color:DS.text, lineHeight:1, letterSpacing:'-0.03em' }}>{k.value}</p>
-              <p style={{ fontSize:13, color:DS.textMuted, marginTop:6, fontWeight:500 }}>{k.label}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Charts */}
-      <div style={{ display:'grid', gridTemplateColumns:'1fr 1.4fr', gap:24, marginBottom:32 }}>
-        <div style={cardStyle}>
-          <p style={{ fontFamily:"'Manrope', sans-serif", fontSize:18, fontWeight:800, color:DS.text, letterSpacing:'-0.01em', marginBottom:24 }}>Distribution by Category</p>
-          <ResponsiveContainer width="100%" height={240}>
-            <PieChart>
-              <Pie data={catData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} dataKey="value" stroke="none" paddingAngle={2}>
-                {catData.map((_,i) => <Cell key={i} fill={CHART_COLORS[i%CHART_COLORS.length]}/>)}
-              </Pie>
-              <Tooltip contentStyle={{ fontSize:13,borderRadius:DS.radiusBtn,border:'none',boxShadow:DS.shadowAmbient,fontWeight:500 }} itemStyle={{ color:DS.text }}/>
-            </PieChart>
-          </ResponsiveContainer>
-          <div style={{ display:'flex', flexWrap:'wrap', gap:'12px 20px', justifyContent:'center', marginTop:16 }}>
-            {catData.map((c,i) => (
-              <div key={i} style={{ display:'flex', alignItems:'center', gap:8 }}>
-                <span style={{ width:10, height:10, borderRadius:'50%', background:CHART_COLORS[i%CHART_COLORS.length] }}/>
-                <span style={{ fontSize:13, color:DS.textMuted, fontWeight:500 }}>{c.name}</span>
+      {view === 'analytics' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
+            {kpis.map((k, i) => (
+              <div key={i} style={{ background: DS.surface, padding: 24, borderRadius: 16, boxShadow: DS.shadowAmbient, display: 'flex', alignItems: 'center', gap: 16 }}>
+                <div style={{ width: 44, height: 44, borderRadius: 12, background: k.bg, color: k.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{k.icon}</div>
+                <div>
+                  <p style={{ fontSize: 26, fontWeight: 800, color: DS.text, margin: 0, lineHeight: 1.2 }}>{k.value}</p>
+                  <p style={{ fontSize: 12, color: DS.textMuted, fontWeight: 600, margin: 0 }}>{k.label}</p>
+                </div>
               </div>
             ))}
           </div>
-        </div>
-        
-        <div style={cardStyle}>
-          <p style={{ fontFamily:"'Manrope', sans-serif", fontSize:18, fontWeight:800, color:DS.text, letterSpacing:'-0.01em', marginBottom:24 }}>Monthly Incident Volume</p>
-          <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={monthlyData} barSize={36} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke={DS.surfaceHigh} vertical={false}/>
-              <XAxis dataKey="month" tick={{ fontSize:12, fill:DS.textMuted, fontWeight:500 }} axisLine={false} tickLine={false} dy={10}/>
-              <YAxis tick={{ fontSize:12, fill:DS.textMuted, fontWeight:500 }} axisLine={false} tickLine={false} dx={-10}/>
-              <Tooltip cursor={{ fill:DS.surfaceLow }} contentStyle={{ fontSize:13,borderRadius:DS.radiusBtn,border:'none',boxShadow:DS.shadowAmbient,fontWeight:500 }}/>
-              <Bar dataKey="count" fill={DS.emerald} radius={[6,6,0,0]}/>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
 
-      {/* AI Clustering */}
-      <div style={cardStyle}>
-        <div style={{ display:'flex', flexWrap:'wrap', alignItems:'center', justifyContent:'space-between', gap:16, marginBottom:24 }}>
-          <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-            <div style={{ width:36, height:36, borderRadius:10, background:DS.emeraldLight, display:'flex', alignItems:'center', justifyContent:'center' }}>
-              <ShieldCheck size={18} style={{ color:DS.emerald }}/>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 24 }}>
+            <div style={cardStyle}>
+              <h3 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 24px' }}>Category Distribution</h3>
+              <ResponsiveContainer width="100%" height={260}>
+                <PieChart>
+                  <Pie data={data?.categoryDistribution} cx="50%" cy="50%" innerRadius={60} outerRadius={100} dataKey="value" nameKey="name" stroke="none" paddingAngle={4}>
+                    {(data?.categoryDistribution || []).map((_: any, i: number) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
+                  </Pie>
+                  <RechartsTooltip contentStyle={{ borderRadius: 8, border: 'none', boxShadow: DS.shadowAmbient }} />
+                </PieChart>
+              </ResponsiveContainer>
             </div>
-            <p style={{ fontFamily:"'Manrope', sans-serif", fontSize:18, fontWeight:800, color:DS.text, letterSpacing:'-0.01em' }}>AI Complaint Clustering</p>
-          </div>
-          <div style={{ display:'flex', alignItems:'center', gap:6, background:DS.surfaceLow, padding:'6px 14px', borderRadius:40 }}>
-            <Shield size={14} style={{ color:DS.emerald }}/>
-            <span style={{ fontSize:11, fontWeight:800, color:DS.emeraldDark, letterSpacing:'0.06em' }}>PATTERN RECOGNITION ACTIVE</span>
+            
+            <div style={cardStyle}>
+              <h3 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 24px' }}>System Volume Trends</h3>
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={data?.monthlyVolume} barSize={36}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={DS.surfaceLow} />
+                  <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: DS.textMuted }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: DS.textMuted }} />
+                  <RechartsTooltip cursor={{ fill: DS.surfaceLow }} contentStyle={{ borderRadius: 8, border: 'none', boxShadow: DS.shadowAmbient }}/>
+                  <Bar dataKey="count" fill={DS.blue} radius={[6, 6, 0, 0]}/>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         </div>
-        
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:20 }}>
-          {clusters.map((cl,i) => (
-            <div key={i} style={{ padding:'24px', borderRadius:16, background:cl.bg, transition:'transform 0.2s', cursor:'pointer' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'} onMouseLeave={e => e.currentTarget.style.transform = 'none'}>
-              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:16 }}>
-                <p style={{ fontSize:14, fontWeight:800, color:cl.color, lineHeight:1.3 }}>{cl.cat}</p>
-                <span style={{ fontSize:11, fontWeight:800, padding:'4px 10px', borderRadius:40, background:DS.surface, color:cl.color, flexShrink:0, boxShadow:`0 2px 4px rgba(0,0,0,0.04)` }}>{cl.sev}</span>
-              </div>
-              <p style={{ fontFamily:"'Manrope', sans-serif", fontSize:36, fontWeight:800, color:cl.color, lineHeight:1 }}>{cl.count}</p>
-              <p style={{ fontSize:12, fontWeight:600, color:cl.color, opacity:0.8, marginTop:4 }}>incidents grouped</p>
-              <div style={{ marginTop:24, height:6, background:'rgba(255,255,255,0.4)', borderRadius:99, overflow:'hidden' }}>
-                <div style={{ width:`${Math.min((cl.count/50)*100,100)}%`, height:'100%', background:cl.color, borderRadius:99 }}/>
-              </div>
-            </div>
-          ))}
+      )}
+
+      {view === 'queue' && (
+        <div style={{ background: DS.surface, borderRadius: 16, boxShadow: DS.shadowAmbient, overflow: 'hidden' }}>
+           <div style={{ padding: 24, borderBottom: `1px solid ${DS.surfaceLow}` }}>
+             <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>Global Grievance Database</h3>
+           </div>
+           <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                <thead>
+                  <tr style={{ background: DS.surfaceLow, color: DS.textMuted, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    <th style={{ padding: '16px 24px', fontWeight: 700 }}>Tracking ID</th>
+                    <th style={{ padding: '16px 24px', fontWeight: 700 }}>Category</th>
+                    <th style={{ padding: '16px 24px', fontWeight: 700 }}>Status/Priority</th>
+                    <th style={{ padding: '16px 24px', fontWeight: 700 }}>Authority Lock</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data?.allGrievances?.map((g: any, i: number) => {
+                    const r = revealedIds[g.trackingId];
+                    return (
+                      <tr key={i} style={{ borderBottom: `1px solid ${DS.surfaceLow}`, fontSize: 13, color: DS.text, fontWeight: 600 }}>
+                        <td style={{ padding: '16px 24px', fontFamily: 'monospace', fontWeight: 700 }}>{g.trackingId}</td>
+                        <td style={{ padding: '16px 24px' }}>{g.category}</td>
+                        <td style={{ padding: '16px 24px' }}>{g.status} | {g.priority}</td>
+                        <td style={{ padding: '16px 24px' }}>
+                          {!r ? (
+                            <button onClick={() => handleRevealIdentity(g.trackingId)} style={{ background: DS.surfaceLow, border: 'none', padding: '6px 12px', borderRadius: 8, color: DS.red, fontSize: 11, fontWeight: 700, cursor: 'pointer', display: 'flex', gap: 6, alignItems: 'center' }}>
+                              <EyeOff size={14} /> DECRYPT
+                            </button>
+                          ) : (
+                            <div style={{ background: DS.emeraldLight, color: DS.emeraldDark, padding: '6px 12px', borderRadius: 8, fontSize: 11, fontWeight: 700, display: 'inline-flex', gap: 6, alignItems: 'center' }}>
+                               <Eye size={14} /> {r.name} ({r.studentId})
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+            </table>
+           </div>
         </div>
-      </div>
+      )}
+
     </div>
   );
 };

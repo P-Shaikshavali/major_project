@@ -12,76 +12,100 @@ namespace EGrievanceApi.Services
     public class AuthService : IAuthService
     {
         private readonly ApplicationDbContext _context;
-        private readonly IConfiguration _configuration;
+        private readonly IConfiguration       _configuration;
 
         public AuthService(ApplicationDbContext context, IConfiguration configuration)
         {
-            _context = context;
+            _context       = context;
             _configuration = configuration;
         }
 
+        // ── SIGNUP ────────────────────────────────────────────────────────────
         public async Task<User> RegisterUserAsync(RegisterDto request)
         {
-            if (await _context.Users.AnyAsync(u => u.Email == request.Email))
-            {
+            // Normalise email
+            var emailNorm = request.Email.Trim().ToLowerInvariant();
+
+            // ── Email domain rule ──────────────────────────────────────────
+            if (request.Role == "Student" && !emailNorm.EndsWith("@edu.in"))
+                throw new Exception("Student must use college email (@edu.in)");
+
+            // ── Duplicate check ────────────────────────────────────────────
+            if (await _context.Users.AnyAsync(u => u.Email.ToLower() == emailNorm))
                 throw new Exception("User with this email already exists.");
-            }
 
             var user = new User
             {
-                Name = request.Name,
-                Email = request.Email,
-                Role = request.Role,
+                Name         = request.Name.Trim(),
+                Email        = emailNorm,
+                Role         = request.Role,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
-                StudentId = request.StudentId,
-                Department = request.Department,
-                Year = request.Year
+                StudentId    = request.StudentId,
+                Department   = request.Department,
+                Year         = request.Year
             };
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
-
             return user;
         }
 
-        public async Task<string> LoginUserAsync(LoginDto request)
+
+        // ── LOGIN ─────────────────────────────────────────────────────────────
+        public async Task<LoginResult> LoginUserAsync(LoginDto request)
         {
-            var user = await _context.Users.SingleOrDefaultAsync(u => u.Email == request.Email);
+            var emailNorm = request.Email.Trim().ToLowerInvariant();
+            var user = await _context.Users
+                .SingleOrDefaultAsync(u => u.Email.ToLower() == emailNorm);
+
             if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
             {
                 throw new Exception("Invalid email or password.");
             }
 
-            return GenerateJwtToken(user);
+            return new LoginResult
+            {
+                Token = GenerateJwtToken(user),
+                Role  = user.Role,
+                Name  = user.Name
+            };
         }
 
+        // ── JWT Generator ─────────────────────────────────────────────────────
         private string GenerateJwtToken(User user)
         {
             var jwtSettings = _configuration.GetSection("Jwt");
-            var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]!);
+            var jwtKey = Environment.GetEnvironmentVariable("JWT__KEY")
+                ?? Environment.GetEnvironmentVariable("Jwt__Key")
+                ?? jwtSettings["Key"];
+
+            if (string.IsNullOrWhiteSpace(jwtKey))
+                throw new InvalidOperationException(
+                    "JWT Key is missing. Set Jwt:Key in config or JWT__KEY env var.");
+
+            var key = Encoding.ASCII.GetBytes(jwtKey);
 
             var claims = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Name, user.Name),
-                new Claim(ClaimTypes.Role, user.Role)
+                new Claim(ClaimTypes.Email,           user.Email),
+                new Claim(ClaimTypes.Name,            user.Name),
+                new Claim(ClaimTypes.Role,            user.Role)
             };
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {
-                Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddHours(24),
+                Subject            = new ClaimsIdentity(claims),
+                Expires            = DateTime.UtcNow.AddHours(24),
                 SigningCredentials = new SigningCredentials(
-                    new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
-                Issuer = jwtSettings["Issuer"],
+                    new SymmetricSecurityKey(key),
+                    SecurityAlgorithms.HmacSha256Signature),
+                Issuer   = jwtSettings["Issuer"],
                 Audience = jwtSettings["Audience"]
             };
 
             var tokenHandler = new JwtSecurityTokenHandler();
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-
-            return tokenHandler.WriteToken(token);
+            return tokenHandler.WriteToken(tokenHandler.CreateToken(tokenDescriptor));
         }
     }
 }

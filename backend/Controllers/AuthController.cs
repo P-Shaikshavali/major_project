@@ -15,13 +15,33 @@ namespace EGrievanceApi.Controllers
             _authService = authService;
         }
 
-        [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterDto request)
+        // ── Signup (primary endpoint per spec) ────────────────────────────────
+        [HttpPost("signup")]
+        public async Task<IActionResult> Signup([FromBody] RegisterDto request)
         {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+                return BadRequest(new { message = string.Join(" ", errors) });
+            }
+
             try
             {
                 var user = await _authService.RegisterUserAsync(request);
-                return Ok(new { message = "User registered successfully", userId = user.Id });
+                return Ok(new { message = "Signup successful", userId = user.Id });
+            }
+            catch (Exception ex) when (ex.Message.Contains("@edu.in"))
+            {
+                // 422 Unprocessable — student email domain violation
+                return UnprocessableEntity(new { message = ex.Message });
+            }
+            catch (Exception ex) when (ex.Message.Contains("already exists"))
+            {
+                // 409 Conflict — email already taken
+                return Conflict(new { message = "User already exists" });
             }
             catch (Exception ex)
             {
@@ -29,17 +49,39 @@ namespace EGrievanceApi.Controllers
             }
         }
 
+
+        // ── Register (alias kept for backward compatibility) ──────────────────
+        [HttpPost("register")]
+        public Task<IActionResult> Register([FromBody] RegisterDto request)
+            => Signup(request);
+
+        // ── Login ─────────────────────────────────────────────────────────────
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto request)
         {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+                return BadRequest(new { message = string.Join(" ", errors) });
+            }
+
             try
             {
-                var token = await _authService.LoginUserAsync(request);
-                return Ok(new { token });
+                var result = await _authService.LoginUserAsync(request);
+                return Ok(new
+                {
+                    token   = result.Token,
+                    role    = result.Role,
+                    name    = result.Name,
+                    message = "Login successful"
+                });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return Unauthorized(new { message = ex.Message });
+                return Unauthorized(new { message = "Invalid email or password" });
             }
         }
     }

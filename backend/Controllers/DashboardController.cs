@@ -3,6 +3,7 @@ using EGrievanceApi.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using EGrievanceApi.Services;
 
 namespace EGrievanceApi.Controllers
 {
@@ -12,18 +13,21 @@ namespace EGrievanceApi.Controllers
     public class DashboardController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-        private readonly EGrievanceApi.Services.IAIEngineService _aiEngine;
-        private readonly EGrievanceApi.Services.IAnonymityService _anonymityService;
+        private readonly IAIEngineService _aiEngine;
+        private readonly IAnonymityService _anonymityService;
+        private readonly IHODService _hodService;
+        private readonly IAdminService _adminService;
 
-        public DashboardController(ApplicationDbContext context, EGrievanceApi.Services.IAIEngineService aiEngine, EGrievanceApi.Services.IAnonymityService anonymityService)
+        public DashboardController(ApplicationDbContext context, IAIEngineService aiEngine, IAnonymityService anonymityService, IHODService hodService, IAdminService adminService)
         {
             _context = context;
             _aiEngine = aiEngine;
             _anonymityService = anonymityService;
+            _hodService = hodService;
+            _adminService = adminService;
         }
 
         private int GetCurrentUserId() => int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
-        private string GetCurrentUserRole() => User.FindFirst(ClaimTypes.Role)?.Value ?? "Student";
 
         [HttpGet("student")]
         public async Task<IActionResult> GetStudentDashboard()
@@ -52,45 +56,38 @@ namespace EGrievanceApi.Controllers
             });
         }
 
-        [HttpGet("authority")]
-        [Authorize(Roles = "Faculty,Warden,Dean")]
-        public async Task<IActionResult> GetAuthorityDashboard()
+        [HttpGet("faculty")]
+        [Authorize(Roles = "Faculty")]
+        public async Task<IActionResult> GetFacultyDashboard()
         {
-            var role = GetCurrentUserRole();
-            
-            var assignedGrievances = await _context.Grievances
-                .Include(g => g.User)
-                .Where(g => g.AssignedTo == role)
-                .AsNoTracking()
-                .ToListAsync();
+            var assignedGrievances = await _context.Grievances.Include(g => g.User).Where(g => g.AssignedTo == "Faculty").AsNoTracking().ToListAsync();
+            _anonymityService.MaskIdentities(assignedGrievances);
+            return Ok(assignedGrievances); // Matches expected structure
+        }
 
-            if (role == "Faculty" || role == "Warden")
-            {
-                _anonymityService.MaskIdentities(assignedGrievances);
-            }
+        [HttpGet("warden")]
+        [Authorize(Roles = "Warden")]
+        public async Task<IActionResult> GetWardenDashboard()
+        {
+            var assignedGrievances = await _context.Grievances.Include(g => g.User).Where(g => g.AssignedTo == "Warden").AsNoTracking().ToListAsync();
+            _anonymityService.MaskIdentities(assignedGrievances);
+            return Ok(assignedGrievances);
+        }
 
-            return Ok(new
-            {
-                NewItems = assignedGrievances.Count(g => g.Status == "Submitted"),
-                Escalated = assignedGrievances.Count(g => g.IsEscalated),
-                Resolved = assignedGrievances.Count(g => g.Status == "Resolved"),
-                Queue = assignedGrievances.OrderByDescending(g => g.CreatedAt).Take(20)
-            });
+        [HttpGet("hod")]
+        [Authorize(Roles = "HOD")]
+        public async Task<IActionResult> GetHodDashboard()
+        {
+            var data = await _hodService.GetDashboardDataAsync();
+            return Ok(data);
         }
 
         [HttpGet("admin")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Dean")]
         public async Task<IActionResult> GetAdminDashboard()
         {
-            var allGrievances = await _context.Grievances.ToListAsync();
-            
-            return Ok(new
-            {
-                Total = allGrievances.Count,
-                Active = allGrievances.Count(g => g.Status != "Resolved"),
-                HighPriority = allGrievances.Count(g => g.Priority == "High"),
-                Escalated = allGrievances.Count(g => g.IsEscalated)
-            });
+            var data = await _adminService.GetGlobalDashboardDataAsync();
+            return Ok(data);
         }
     }
 }

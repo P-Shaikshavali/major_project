@@ -1,10 +1,28 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.IO;
 using System.Text;
 using EGrievanceApi.Data;
+using EGrievanceApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Default logging is sufficient for basic operational verification
+
+
+var dataProtectionKeysPath = Path.Combine(builder.Environment.ContentRootPath, "DataProtection-Keys");
+Directory.CreateDirectory(dataProtectionKeysPath);
+
+var dataProtectionBuilder = builder.Services.AddDataProtection()
+    .SetApplicationName("EGrievanceApi")
+    .PersistKeysToFileSystem(new DirectoryInfo(dataProtectionKeysPath));
+
+if (OperatingSystem.IsWindows())
+{
+    dataProtectionBuilder.ProtectKeysWithDpapi();
+}
 
 // 1. Add CORS (Allow React Frontend)
 builder.Services.AddCors(options =>
@@ -20,11 +38,20 @@ builder.Services.AddCors(options =>
 
 // 2. Add Database Context
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // 3. Add Authentication & JWT
 var jwtSettings = builder.Configuration.GetSection("Jwt");
-var key = Encoding.ASCII.GetBytes(jwtSettings["Key"] ?? throw new InvalidOperationException("JWT Key is missing"));
+var jwtKey = Environment.GetEnvironmentVariable("JWT__KEY")
+    ?? Environment.GetEnvironmentVariable("Jwt__Key")
+    ?? jwtSettings["Key"];
+
+if (string.IsNullOrWhiteSpace(jwtKey))
+{
+    throw new InvalidOperationException("JWT Key is missing. Set Jwt:Key in configuration or JWT__KEY as an environment variable.");
+}
+
+var key = Encoding.ASCII.GetBytes(jwtKey);
 
 builder.Services.AddAuthentication(options =>
 {
@@ -47,6 +74,7 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
@@ -54,21 +82,35 @@ builder.Services.AddAuthorization(options =>
 });
 
 // 4. Register Custom Services
-builder.Services.AddScoped<EGrievanceApi.Services.IAuthService, EGrievanceApi.Services.AuthService>();
-builder.Services.AddScoped<EGrievanceApi.Services.IAIEngineService, EGrievanceApi.Services.AIEngineService>();
-builder.Services.AddScoped<EGrievanceApi.Services.IGrievanceRoutingService, EGrievanceApi.Services.GrievanceRoutingService>();
-builder.Services.AddScoped<EGrievanceApi.Services.IGrievanceService, EGrievanceApi.Services.GrievanceService>();
-builder.Services.AddScoped<EGrievanceApi.Services.IChatbotService, EGrievanceApi.Services.ChatbotService>();
-builder.Services.AddScoped<EGrievanceApi.Services.IAnonymityService, EGrievanceApi.Services.AnonymityService>();
-builder.Services.AddScoped<EGrievanceApi.Services.IFacultyGrievanceService, EGrievanceApi.Services.FacultyGrievanceService>();
+builder.Services.AddSignalR(); // Enable WebSockets early
+builder.Services.AddTransient<EGrievanceApi.Hubs.GrievanceHub>(); // Explictly map the hub to DI
 
-builder.Services.AddHostedService<EGrievanceApi.Services.EscalationHostedService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IAIEngineService, AIEngineService>();
+builder.Services.AddScoped<IGrievanceRoutingService, GrievanceRoutingService>();
+builder.Services.AddScoped<IGrievanceService, GrievanceService>();
+builder.Services.AddScoped<IAdminService, AdminService>();
+builder.Services.AddScoped<IChatbotService, ChatbotService>();
+builder.Services.AddScoped<IAuditService, AuditService>();
+// builder.Services.AddHostedService<BackgroundAutoEscalationJob>();
+builder.Services.AddScoped<IAnonymityService, AnonymityService>();
+builder.Services.AddScoped<IFacultyGrievanceService, FacultyGrievanceService>();
+builder.Services.AddScoped<IStudentIntelligenceService, StudentIntelligenceService>();
+builder.Services.AddScoped<IHODService, HODService>();
+
+// builder.Services.AddHostedService<EscalationHostedService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await dbContext.Database.EnsureCreatedAsync();
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -86,5 +128,15 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<EGrievanceApi.Hubs.GrievanceHub>("/hubs/grievance"); // Mount WebSocket endpoint
 
-app.Run();
+try
+{
+    app.Run();
+}
+catch (Exception ex)
+{
+    Console.WriteLine("CRITICAL FATAL EXCEPTION OCCURRED DURING STARTUP:");
+    Console.WriteLine(ex.ToString());
+    throw;
+}

@@ -9,6 +9,7 @@ namespace EGrievanceApi.Services
         /// Supported filters: priority, status, category, sort
         /// </summary>
         Task<IEnumerable<FacultyGrievanceDto>> GetFacultyGrievancesAsync(
+            string   assignedRole,
             string?  priority   = null,
             string?  status     = null,
             string?  category   = null,
@@ -26,6 +27,6 @@ namespace EGrievanceApi.Services
         /// <summary>
         /// Returns analytics: totals, avg resolution time, category breakdown, AI insights.
         /// </summary>
-        Task<FacultyAnalyticsDto> GetFacultyAnalyticsAsync();
+        Task<FacultyAnalyticsDto> GetFacultyAnalyticsAsync(string assignedRole);
     }
 }

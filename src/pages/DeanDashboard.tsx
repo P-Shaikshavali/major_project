@@ -11,7 +11,7 @@ const DS = {
   surfaceHigh:   '#E1E3E4',
   emerald:       '#10B981',
   emeraldDark:   '#065F46',
-  emeraldLight:  '#ECFDF5',
+  emeraldLight: '#ECFDF5',
   text:          '#111827',
   textMuted:     '#414754',
   textFaint:     '#727785',
@@ -48,12 +48,22 @@ const KpiCard = ({ icon, label, value, color, bg }: any) => (
 const DeanDashboard = () => {
   const [complaints, setComplaints] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'escalated' | 'all'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'escalated' | 'all' | 'audits' | 'performance'>('overview');
   const [updatingId, setUpdatingId] = useState<number | null>(null);
+  const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [globalData, setGlobalData] = useState<any>(null);
 
   useEffect(() => {
-    api.get('/dashboard/authority')
-      .then(r => setComplaints(r.data || []))
+    Promise.all([
+      api.get('/admin/dashboard'),
+      api.get('/admin/audit-logs'),
+      api.get('/dashboard/hod')
+    ])
+      .then(([r1, r2, _r3]) => {
+         setGlobalData(r1.data);
+         setComplaints(r1.data?.allGrievances || []);
+         setAuditLogs(r2.data || []); 
+      })
       .catch(() => setComplaints([]))
       .finally(() => setLoading(false));
   }, []);
@@ -61,8 +71,17 @@ const DeanDashboard = () => {
   const updateStatus = async (id: number, status: string) => {
     setUpdatingId(id);
     try {
-      await api.put(`/faculty/update-status/${id}`, { newStatus: status, resolutionNote: '', recommendEscalation: false });
+      await api.put(`/admin/update-status/${id}`, `"${status}"`, { headers: { 'Content-Type': 'application/json' } });
       setComplaints(p => p.map(c => (c.id === id ? { ...c, status } : c)));
+    } catch (e) { console.error(e); }
+    finally { setUpdatingId(null); }
+  };
+
+  const forceEscalate = async (id: number) => {
+    setUpdatingId(id);
+    try {
+      await api.post(`/admin/escalate/${id}`);
+      setComplaints(p => p.map(c => (c.id === id ? { ...c, isEscalated: true, status: 'Escalated' } : c)));
     } catch (e) { console.error(e); }
     finally { setUpdatingId(null); }
   };
@@ -92,9 +111,11 @@ const DeanDashboard = () => {
   };
 
   return (
-    <div style={{ padding: '40px 48px', minHeight: '100vh', background: DS.bg, fontFamily: "'Inter', sans-serif" }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600&display=swap');`}</style>
-      
+    <div style={{ flex: 1, padding: '40px 48px', minHeight: '100vh', background: 'transparent', fontFamily: "'Inter', sans-serif" }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600&display=swap');
+      `}</style>
+
       {/* Header */}
       <div style={{ marginBottom: 32 }}>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: DS.emeraldLight, padding: '4px 12px', borderRadius: 20, marginBottom: 12 }}>
@@ -107,31 +128,38 @@ const DeanDashboard = () => {
         <p style={{ fontSize: 15, color: DS.textMuted, marginTop: 8 }}>Institution-wide oversight — manage escalated grievances and monitor resolution trends.</p>
       </div>
 
-      {/* KPIs */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 24, marginBottom: 32 }}>
+      {globalData?.clusters && globalData.clusters.length > 0 && activeTab === 'overview' && (
+         <div style={{ padding: '16px 20px', background: DS.blueLight, borderRadius: 12, marginBottom: 24, display: 'flex', alignItems: 'center', gap: 16 }}>
+            <span style={{ fontSize: 13, fontWeight: 800, color: '#0050b3', textTransform: 'uppercase', letterSpacing: '0.04em' }}>🧠 AI Insight Hook:</span>
+            <span style={{ fontSize: 14, color: DS.text, fontWeight: 500 }}>High accumulation pattern detected in {globalData.clusters[0].category} ({globalData.clusters[0].count} reports). Escalate immediate physical inspection.</span>
+         </div>
+      )}
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 24, marginBottom: 32 }}>
         {kpis.map((k, i) => <KpiCard key={i} {...k} />)}
       </div>
 
-      {/* Tab Nav */}
-      <div style={{ display: 'flex', gap: 10, marginBottom: 24 }}>
-        {([['overview','Overview'], ['escalated','Escalated'], ['all','All Complaints']] as const).map(([key, label]) => (
-          <button key={key} onClick={() => setActiveTab(key)}
-            style={{ 
-              padding: '10px 24px', borderRadius: 40, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer', transition: 'all 0.2s',
-              background: activeTab === key ? DS.text : 'transparent', 
-              color: activeTab === key ? '#FFFFFF' : DS.textFaint 
-            }}>
-            {label} 
-            {key === 'escalated' && escalated.length > 0 && (
-              <span style={{ marginLeft: 6, background: DS.red, color: '#fff', borderRadius: 40, padding: '2px 8px', fontSize: 11, fontWeight: 700 }}>
-                {escalated.length}
-              </span>
-            )}
-          </button>
-        ))}
+      {/* Tabs */}
+      <div style={{ display: 'flex', gap: 12, marginBottom: 32, borderBottom: `1px solid ${DS.surfaceHigh}`, paddingBottom: 16 }}>
+         {[
+            { id: 'overview', label: 'Control Center' },
+            { id: 'all', label: 'All Complaints' },
+            { id: 'escalated', label: 'Escalations' },
+            { id: 'performance', label: 'Performance Tracker' },
+            { id: 'audits', label: 'Identity Logs' }
+         ].map(t => (
+            <button key={t.id} onClick={() => setActiveTab(t.id as any)}
+               style={{ 
+                  padding: '8px 16px', borderRadius: 8, border: 'none', cursor: 'pointer',
+                  background: activeTab === t.id ? DS.emeraldLight : 'transparent',
+                  color: activeTab === t.id ? DS.emeraldDark : DS.textMuted,
+                  fontWeight: 700, fontSize: 13
+               }}>
+               {t.label}
+            </button>
+         ))}
       </div>
 
-      {/* Chart + List row */}
       <div style={{ display: 'grid', gridTemplateColumns: activeTab === 'overview' ? '1fr 1.8fr' : '1fr', gap: 24 }}>
         
         {activeTab === 'overview' && (
@@ -151,25 +179,13 @@ const DeanDashboard = () => {
                 No category data available
               </div>
             )}
-            
-            {pieData.length > 0 && (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px 20px', justifyContent: 'center', marginTop: 16 }}>
-                {pieData.map((c:any, i:number) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ width: 10, height: 10, borderRadius: '50%', background: CHART_COLORS[i % CHART_COLORS.length] }} />
-                    <span style={{ fontSize: 13, color: DS.textMuted, fontWeight: 500 }}>{c.name}</span>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         )}
 
-        {/* Complaints Table Card */}
         <div style={cardStyle}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
             <p style={{ fontFamily: "'Manrope', sans-serif", fontSize: 18, fontWeight: 800, color: DS.text, letterSpacing: '-0.01em' }}>
-              {activeTab === 'escalated' ? 'Action Required (Escalated)' : activeTab === 'all' ? 'Complaint Archive' : 'Recent Overview'}
+              {activeTab === 'escalated' ? 'Action Required (Escalated)' : activeTab === 'all' ? 'Complaint Archive' : activeTab === 'audits' ? 'Security Identity Audit Trail' : 'Recent Overview'}
             </p>
           </div>
           
@@ -178,10 +194,40 @@ const DeanDashboard = () => {
               <RefreshCw size={24} style={{ margin: '0 auto 12px', animation: 'spin 1s linear infinite', color: DS.emerald }} />
               <p style={{ fontSize: 14, fontWeight: 500 }}>Fetching institution records...</p>
             </div>
+          ) : activeTab === 'performance' ? (
+             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16 }}>
+               {[
+                  { name: 'Dr. Faculty A', handled: 24, pending: 8, avg: '18h' },
+                  { name: 'Prof. Faculty B', handled: 15, pending: 2, avg: '4.5h' },
+                  { name: 'Warden Block B', handled: 40, pending: 12, avg: '32h' }
+               ].map((p, i) => (
+                  <div key={i} style={{ padding: 20, background: DS.surfaceLow, borderRadius: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                     <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: DS.text }}>{p.name}</p>
+                     <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
+                        <div style={{ background: '#fff', padding: '6px 12px', borderRadius: 6, fontSize: 12, fontWeight: 600 }}><span style={{ color: DS.textFaint }}>Handled:</span> {p.handled}</div>
+                        <div style={{ background: '#fff', padding: '6px 12px', borderRadius: 6, fontSize: 12, fontWeight: 600 }}><span style={{ color: DS.textFaint }}>Pending:</span> <span style={{ color: DS.red }}>{p.pending}</span></div>
+                        <div style={{ background: '#fff', padding: '6px 12px', borderRadius: 6, fontSize: 12, fontWeight: 600 }}><span style={{ color: DS.textFaint }}>Avg Res:</span> {p.avg}</div>
+                     </div>
+                  </div>
+               ))}
+             </div>
+          ) : activeTab === 'audits' ? (
+             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+               {auditLogs.length === 0 ? <p style={{ fontSize: 14, color: DS.textFaint }}>No deep security identity unlocks recorded.</p> : null}
+               {auditLogs.map((log: any, i: number) => (
+                  <div key={i} style={{ padding: 16, borderLeft: `4px solid ${log.action.includes('IDENTITY') ? DS.red : DS.amber}`, background: DS.surfaceLow, borderRadius: 8 }}>
+                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                        <span style={{ fontSize: 14, fontWeight: 800, color: log.action.includes('IDENTITY') ? DS.red : DS.text }}>{log.action}</span>
+                        <span style={{ fontSize: 12, color: DS.textMuted, fontFamily: 'monospace' }}>User: {log.userId} | {new Date(log.timestamp).toLocaleString()}</span>
+                     </div>
+                     <p style={{ fontSize: 13, color: DS.text, margin: 0 }}>{log.details}</p>
+                  </div>
+               ))}
+             </div>
           ) : listToShow.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '64px 0', color: DS.textFaint }}>
               <ShieldCheck size={40} style={{ margin: '0 auto 16px', color: DS.emerald, opacity: 0.8 }} />
-              <p style={{ fontFamily: "'Manrope', sans-serif", fontSize: 18, fontWeight: 800, color: DS.text, letterSpacing: '-0.01em', marginBottom: 4 }}>All Clear</p>
+              <p style={{ fontSize: 18, fontWeight: 800, color: DS.text, marginBottom: 4 }}>All Clear</p>
               <p style={{ fontSize: 14 }}>No items present in this queue.</p>
             </div>
           ) : (
@@ -189,37 +235,32 @@ const DeanDashboard = () => {
               {listToShow.map((c: any, i: number) => {
                 const sc = STATUS_MAP[c.status] || STATUS_MAP.Submitted;
                 return (
-                  <div key={i} style={{ 
-                    display: 'flex', alignItems: 'center', gap: 16, padding: '16px', 
-                    background: DS.surfaceLow, borderRadius: 12, transition: 'background 0.2s' 
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.background = '#F9FBFF'}
-                  onMouseLeave={e => e.currentTarget.style.background = DS.surfaceLow}>
-                    
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '16px', background: DS.surfaceLow, borderRadius: 12 }}>
                     <div style={{ width: 10, height: 10, borderRadius: '50%', background: sc.text, flexShrink: 0 }} />
-                    
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontSize: 14, fontWeight: 700, color: DS.text, fontFamily: 'monospace', letterSpacing: '0.05em', marginBottom: 2 }}>{c.trackingId}</p>
+                      <p style={{ fontSize: 14, fontWeight: 700, color: DS.text, fontFamily: 'monospace', marginBottom: 2 }}>{c.trackingId}</p>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <span style={{ fontSize: 12, color: DS.textMuted, fontWeight: 600 }}>{c.category}</span>
                         <span style={{ fontSize: 12, color: DS.textFaint }}>·</span>
                         <span style={{ fontSize: 12, color: DS.textFaint, fontFamily: 'monospace' }}>{c.anonymousId}</span>
                       </div>
                     </div>
-                    
-                    <select value={c.status} disabled={updatingId === c.id}
-                      onChange={e => updateStatus(c.id, e.target.value)}
-                      style={{ 
-                        fontSize: 12, fontWeight: 700, padding: '8px 16px', borderRadius: DS.radiusBtn, 
-                        border: 'none', background: sc.bg, color: sc.text, 
-                        cursor: 'pointer', outline: 'none', transition: 'all 0.2s',
-                        boxShadow: `0 2px 8px rgba(0,0,0,0.04)`
-                      }}>
-                      <option value="Submitted">Submitted</option>
-                      <option value="InProgress">In Progress</option>
-                      <option value="Resolved">Resolved</option>
-                      <option value="Escalated">Escalated</option>
-                    </select>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end' }}>
+                      <select value={c.status} disabled={updatingId === c.id}
+                        onChange={e => updateStatus(c.id, e.target.value)}
+                        style={{ fontSize: 12, fontWeight: 700, padding: '8px 16px', borderRadius: DS.radiusBtn, border: 'none', background: sc.bg, color: sc.text, cursor: 'pointer', outline: 'none' }}>
+                        <option value="Submitted">Submitted</option>
+                        <option value="InProgress">In Progress</option>
+                        <option value="Resolved">Resolved</option>
+                        <option value="Escalated">Escalated</option>
+                      </select>
+                      {!c.isEscalated && c.status !== 'Resolved' && (
+                         <button onClick={() => forceEscalate(c.id)} disabled={updatingId === c.id}
+                                 style={{ fontSize: 11, fontWeight: 700, padding: '4px 10px', background: DS.redLight, color: DS.red, border: 'none', borderRadius: 8, cursor: 'pointer' }}>
+                           Force Escalate
+                         </button>
+                      )}
+                    </div>
                   </div>
                 );
               })}

@@ -18,21 +18,29 @@ namespace EGrievanceApi.Services
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation("Escalation Hosted Service running.");
-
-            while (!stoppingToken.IsCancellationRequested)
+            try
             {
-                try
+                while (!stoppingToken.IsCancellationRequested)
                 {
-                    await ProcessEscalationsAsync(stoppingToken);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error occurred executing Escalation processing.");
-                }
+                    try
+                    {
+                        await ProcessEscalationsAsync(stoppingToken);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error occurred executing Escalation processing.");
+                    }
 
-                // Run every 24 hours (or whatever interval is appropriate)
-                // For demonstration, simulating a 1-hour check cycle:
-                await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
+                    await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogInformation("Escalation Hosted Service shutdown gracefully.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical(ex, "FATAL ERROR in Escalation Hosted Service.");
             }
         }
 
@@ -51,7 +59,7 @@ namespace EGrievanceApi.Services
             {
                 grievance.IsEscalated = true;
                 grievance.Status = "Escalated";
-                grievance.AssignedTo = "CollegeDean";
+                grievance.AssignedTo = "Dean";
 
                 context.AuditLogs.Add(new AuditLog 
                 {
@@ -60,7 +68,7 @@ namespace EGrievanceApi.Services
                     Details = $"Automatically escalated {grievance.TrackingId} after 3 days."
                 });
 
-                _logger.LogWarning($"Escalating Grievance {grievance.TrackingId} to CollegeDean.");
+                _logger.LogWarning($"Escalating Grievance {grievance.TrackingId} to Dean.");
             }
 
             if (grievancesToEscalate.Any())

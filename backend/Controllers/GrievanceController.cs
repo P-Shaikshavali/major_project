@@ -1,8 +1,10 @@
 using System.Security.Claims;
 using EGrievanceApi.DTOs;
 using EGrievanceApi.Services;
+using EGrievanceApi.Hubs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 namespace EGrievanceApi.Controllers
 {
@@ -13,11 +15,16 @@ namespace EGrievanceApi.Controllers
     {
         private readonly IGrievanceService _grievanceService;
         private readonly IAnonymityService _anonymityService;
+        private readonly IHubContext<GrievanceHub> _hubContext;
 
-        public GrievanceController(IGrievanceService grievanceService, IAnonymityService anonymityService)
+        public GrievanceController(
+            IGrievanceService grievanceService, 
+            IAnonymityService anonymityService,
+            IHubContext<GrievanceHub> hubContext)
         {
             _grievanceService = grievanceService;
             _anonymityService = anonymityService;
+            _hubContext = hubContext;
         }
 
         private int GetCurrentUserId()
@@ -32,6 +39,10 @@ namespace EGrievanceApi.Controllers
             if (userId == 0) return Unauthorized();
 
             var grievance = await _grievanceService.CreateGrievanceAsync(userId, request);
+            
+            // Broadcast live creation payload across the whole network
+            await _hubContext.Clients.All.SendAsync("ReceiveSystemUpdate");
+            
             return Ok(grievance);
         }
 

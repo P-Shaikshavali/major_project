@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { PlusCircle, FolderOpen, Brain, TrendingUp, ChevronRight, ShieldCheck, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+// @ts-ignore
+import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
 import api from '../services/api';
 
 // ── Stitch "Academic Sentinel" Design Tokens ──────────────────────────────────
@@ -33,7 +35,7 @@ const STATUS_COLORS: Record<string, string> = { Resolved: DS.green, Submitted: D
 const STATUS_BGS: Record<string, string> = { Resolved: DS.greenLight, Submitted: DS.blueLight, InProgress: DS.amberLight, Escalated: DS.redLight };
 
 const KpiCard = ({ icon, label, value, color, bg }: any) => (
-  <div style={{ background: DS.surface, borderRadius: DS.radiusCard, padding: '24px', boxShadow: DS.shadowAmbient, display: 'flex', flexDirection: 'column', gap: 16, border: '1px solid rgba(255,255,255,0.8)' }}>
+  <div className="glass-card kpi-hover" style={{ background: 'rgba(255, 255, 255, 0.75)', borderRadius: DS.radiusCard, padding: '24px', boxShadow: DS.shadowAmbient, display: 'flex', flexDirection: 'column', gap: 16, border: '1px solid rgba(255,255,255,0.8)', backdropFilter: 'blur(20px)', transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)' }}>
     <div style={{ width: 44, height: 44, borderRadius: 14, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color }}>{icon}</div>
     <div>
       <p style={{ fontFamily: "'Manrope', sans-serif", fontSize: 32, fontWeight: 800, color: DS.text, letterSpacing: '-0.03em', lineHeight: 1 }}>{value}</p>
@@ -46,8 +48,28 @@ const StudentDashboard = () => {
   const [data, setData] = useState<any>(null);
   const navigate = useNavigate();
 
+  const fetchData = async () => {
+    try {
+      const r = await api.get('/dashboard/student');
+      setData(r.data);
+    } catch (e) { console.error(e); }
+  };
+
   useEffect(() => {
-    api.get('/dashboard/student').then(r => setData(r.data)).catch(console.error);
+    fetchData(); // initial loaded state
+    
+    // 🔥 Attach SignalR Native Pipeline
+    const connection = new HubConnectionBuilder()
+      .withUrl("http://localhost:5275/hubs/grievance")
+      .configureLogging(LogLevel.Information)
+      .withAutomaticReconnect()
+      .build();
+
+    connection.start().then(() => {
+        connection.on("ReceiveSystemUpdate", () => fetchData());
+    }).catch(console.error);
+
+    return () => { connection.stop(); };
   }, []);
 
   const kpis = [
@@ -65,22 +87,27 @@ const StudentDashboard = () => {
   ];
 
   const cardStyle = {
-    background: DS.surface, borderRadius: DS.radiusCard, padding: 32, 
-    boxShadow: DS.shadowAmbient, border: '1px solid rgba(255,255,255,0.8)'
+    background: 'rgba(255, 255, 255, 0.65)', borderRadius: DS.radiusCard, padding: 32, 
+    boxShadow: DS.shadowAmbient, border: '1px solid rgba(255,255,255,0.7)',
+    backdropFilter: 'blur(24px)'
   };
 
   return (
-    <div style={{ padding: '40px 48px', minHeight: '100vh', background: DS.bg, fontFamily: "'Inter', sans-serif" }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600&display=swap');`}</style>
+    <div style={{ padding: '40px 48px', minHeight: '100vh', background: 'transparent', fontFamily: "'Inter', sans-serif", position: 'relative', zIndex: 1 }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600&display=swap');
+        .kpi-hover:hover { transform: translateY(-5px) scale(1.02); box-shadow: 0 30px 50px rgba(0,0,0,0.06); border-color: rgba(255,255,255,0.95); }
+        .lux-text { background: linear-gradient(135deg, ${DS.blueDark}, ${DS.blue}); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+      `}</style>
       
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 40 }}>
         <div>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: DS.blueLight, padding: '4px 12px', borderRadius: 20, marginBottom: 12 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: DS.blueLight, padding: '4px 12px', borderRadius: 20, marginBottom: 16, border: '1px solid rgba(26,115,232,0.1)' }}>
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: DS.blue }} />
-            <span style={{ fontSize: 11, fontWeight: 700, color: DS.blueDark, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Student Portal</span>
+            <span style={{ fontSize: 11, fontWeight: 800, color: DS.blueDark, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Premium Student Portal</span>
           </div>
-          <h1 style={{ fontFamily: "'Manrope', sans-serif", fontSize: 32, fontWeight: 800, color: DS.text, letterSpacing: '-0.02em', margin: 0 }}>
+          <h1 className="lux-text" style={{ fontFamily: "'Manrope', sans-serif", fontSize: 38, fontWeight: 800, letterSpacing: '-0.03em', margin: 0 }}>
             Welcome back, Student
           </h1>
           <p style={{ fontSize: 15, color: DS.textMuted, marginTop: 8 }}>Here is your unified grievance resolution overview.</p>
@@ -200,6 +227,15 @@ const StudentDashboard = () => {
                   </div>
                 </div>
               ))}
+              
+              {data.behavioralAnalytics.Insight && data.behavioralAnalytics.Insight.length > 0 && (
+                 <div style={{ marginTop: 12, padding: 16, background: DS.blueLight, borderRadius: 12 }}>
+                   <p style={{ fontSize: 12, fontWeight: 800, color: DS.blueDark, textTransform: 'uppercase', marginBottom: 8 }}>💡 Dynamic AI Suggestion</p>
+                   {data.behavioralAnalytics.Insight.map((ins: string, idx: number) => (
+                      <p key={idx} style={{ fontSize: 13, color: DS.text, fontWeight: 600, margin: '0 0 6px 0', lineHeight: 1.4 }}>✦ {ins}</p>
+                   ))}
+                 </div>
+              )}
             </div>
           )}
           

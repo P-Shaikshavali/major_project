@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, PlusCircle, ClipboardList, User,
-  MessageSquare, LogOut, Moon, Sun, ShieldCheck, Lock,
+  MessageSquare, LogOut, ShieldCheck, Lock,
   GraduationCap, Home, Brain, ChevronRight
 } from 'lucide-react';
 import useSessionSecurity from '../../hooks/useSessionSecurity';
@@ -16,47 +16,69 @@ const NAV_BY_ROLE: Record<string, { to: string; icon: React.ReactNode; label: st
     { to: '/dashboard/profile',  icon: <User size={20} />,            label: 'My Profile'      },
   ],
   Faculty: [
-    { to: '/dashboard/faculty',    icon: <ShieldCheck size={20} />,   label: 'Decision Support' },
-    { to: '/dashboard/authority',  icon: <ClipboardList size={20} />, label: 'Complaint Queue'  },
+    { to: '/dashboard/faculty',    icon: <ShieldCheck size={20} />,    label: 'Decision Support' },
+    { to: '/dashboard/authority',  icon: <ClipboardList size={20} />,  label: 'Complaint Queue'  },
   ],
-  Dean: [
-    { to: '/dashboard/dean',       icon: <GraduationCap size={20} />, label: 'Dean Dashboard'   },
-    { to: '/dashboard/authority',  icon: <ClipboardList size={20} />, label: 'All Complaints'   },
+  // "Warden" is the role stored in DB/JWT — maps to Hostel Dean dashboard
+  Warden: [
+    { to: '/dashboard/hosteldean', icon: <Home size={20} />,           label: 'Hostel Dashboard' },
+    { to: '/dashboard/authority',  icon: <ClipboardList size={20} />,  label: 'Complaint Queue'  },
   ],
   HostelDean: [
-    { to: '/dashboard/hosteldean', icon: <Home size={20} />,          label: 'Hostel Dashboard' },
-    { to: '/dashboard/authority',  icon: <ClipboardList size={20} />, label: 'Complaint Queue'  },
+    { to: '/dashboard/hosteldean', icon: <Home size={20} />,           label: 'Hostel Dashboard' },
+    { to: '/dashboard/authority',  icon: <ClipboardList size={20} />,  label: 'Complaint Queue'  },
+  ],
+  HOD: [
+    { to: '/dashboard/hod',        icon: <GraduationCap size={20} />,  label: 'HOD Dashboard'    },
+    { to: '/dashboard/authority',  icon: <ClipboardList size={20} />,  label: 'Complaint Queue'  },
+  ],
+  Dean: [
+    { to: '/dashboard/dean',       icon: <GraduationCap size={20} />,  label: 'Dean Dashboard'   },
+    { to: '/dashboard/authority',  icon: <ClipboardList size={20} />,  label: 'All Complaints'   },
   ],
   Admin: [
     { to: '/dashboard/admin',      icon: <LayoutDashboard size={20} />, label: 'System Analytics' },
     { to: '/dashboard/authority',  icon: <ClipboardList size={20} />,   label: 'Complaint Queue'  },
-    { to: '/dashboard/faculty',    icon: <Brain size={20} />,           label: 'Faculty View'    },
+    { to: '/dashboard/faculty',    icon: <Brain size={20} />,           label: 'Faculty View'     },
   ],
 };
 
 const ROLE_LABELS: Record<string, string> = {
-  Student: 'Student Portal', Faculty: 'Faculty Portal', Dean: "Dean's Office",
-  HostelDean: 'Hostel Admin', Admin: 'Admin Portal',
+  Student:    'Student Portal',
+  Faculty:    'Faculty Portal',
+  Warden:     'Warden Portal',
+  HostelDean: 'Hostel Admin',
+  HOD:        'HOD Portal',
+  Dean:       "Dean's Office",
+  Admin:      'Admin Portal',
 };
 
+
 const DS = {
-  bg: '#F8F9FA',
-  blue: '#1A73E8',
-  blueLight: '#EBF3FD',
-  emerald: '#10B981',
-  text: '#111827',
-  textMuted: '#414754',
-  textFaint: '#727785',
-  glass: 'rgba(255, 255, 255, 0.75)',
-  glassDark: 'rgba(17, 24, 39, 0.85)',
-  blur: 'blur(24px)',
+  bg:             '#F8F9FA',
+  surface:        '#FFFFFF',
+  surfaceHigh:    '#E8ECF0',
+  blue:           '#1A73E8',
+  blueLight:      '#EBF3FD',
+  emerald:        '#10B981',
+  emeraldDark:    '#065F46',
+  text:           '#111827',
+  textMuted:      '#414754',
+  textFaint:      '#727785',
+  red:            '#EF4444',
+  redLight:       '#FEF2F2',
+  amber:          '#F59E0B',
+  glass:          'rgba(255, 255, 255, 0.75)',
+  glassDark:      'rgba(17, 24, 39, 0.85)',
+  blur:           'blur(24px)',
   shadowFloating: '0 24px 48px rgba(0,0,0,0.08)',
 };
 
 const DashboardLayout = () => {
   useNavigate(); // kept for future programmatic navigation
   const role = localStorage.getItem('userRole') || 'Student';
-  const [dark, setDark] = useState(() => document.documentElement.classList.contains('dark'));
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_dark] = useState(() => document.documentElement.classList.contains('dark'));
   const { sessionState, timeLeft, extendSession, forceLogout } = useSessionSecurity();
 
   // Glassmorphic state: true = expanded sidebar, false = iconic sidebar
@@ -92,6 +114,15 @@ const DashboardLayout = () => {
 
   return (
     <div style={{ display: 'flex', minHeight: '100svh', width: '100%', background: DS.bg, fontFamily: "'Inter', sans-serif" }}>
+      <style>{`
+        .mesh-bg-app {
+          position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 0;
+          background: 
+            radial-gradient(circle at 10% 10%, ${DS.blue}08 0%, transparent 40%),
+            radial-gradient(circle at 90% 90%, ${DS.emerald}08 0%, transparent 40%);
+        }
+      `}</style>
+      <div className="mesh-bg-app" />
       
       {/* ── Floating Glassmorphic Sidebar ── */}
       <div style={{ 
@@ -101,12 +132,12 @@ const DashboardLayout = () => {
         <aside style={{
           width: isExpanded ? 260 : 80,
           height: '100%',
-          background: DS.glass,
-          backdropFilter: DS.blur,
-          WebkitBackdropFilter: DS.blur,
+          background: 'rgba(255, 255, 255, 0.65)',
+          backdropFilter: 'blur(32px)',
+          WebkitBackdropFilter: 'blur(32px)',
           borderRadius: 24,
-          border: '1px solid rgba(255,255,255,0.8)',
-          boxShadow: DS.shadowFloating,
+          border: '1px solid rgba(255,255,255,0.6)',
+          boxShadow: '0 30px 60px rgba(26,115,232,0.08)',
           display: 'flex', flexDirection: 'column',
           transition: 'width 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
           overflow: 'hidden',
@@ -117,12 +148,16 @@ const DashboardLayout = () => {
           <button 
             onClick={() => setIsExpanded(!isExpanded)}
             style={{ 
-              position: 'absolute', right: isExpanded ? 16 : 0, top: 24, width: 28, height: 28, 
-               margin: isExpanded ? 0 : '0 auto', left: isExpanded ? 'auto' : 0, right: isExpanded ? 16 : 0, // center if collapsed
+              position: 'absolute',
+              right: isExpanded ? 16 : 0,
+              left:  isExpanded ? 'auto' : 0,
+              top: 24, width: 28, height: 28,
+              margin: isExpanded ? 0 : '0 auto',
               borderRadius: '50%', background: DS.surface, border: `1px solid ${DS.surfaceHigh}`, 
               display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 2, 
               color: DS.text, boxShadow: `0 4px 12px rgba(0,0,0,0.05)`, transition: 'transform 0.4s' 
             }}>
+
             <ChevronRight size={14} style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.4s' }} />
           </button>
 

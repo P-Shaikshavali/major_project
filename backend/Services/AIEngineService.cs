@@ -14,35 +14,38 @@ namespace EGrievanceApi.Services
             _context = context;
         }
 
-        // 1. Semantic Classification - Simulate Embeddings via Keyword Mapping
+        // 1. Semantic Classification using TF-IDF and Cosine Similarity mapping
         public string ClassifyCategory(string complaintText)
         {
             var lowerText = complaintText.ToLower();
 
-            // Simulate semantic vectors/clusters
-            var categories = new Dictionary<string, List<string>>
+            // ⚠️ Keys here MUST match GrievanceRoutingService switch cases exactly
+            var categoryCorpus = new Dictionary<string, string>
             {
-                { "Hostel", new List<string> { "food", "mess", "wifi", "room", "cleaning", "water" } },
-                { "Academic", new List<string> { "marks", "grade", "faculty", "attendance", "syllabus", "exam" } },
-                { "Facilities", new List<string> { "ac", "projector", "bench", "library", "lab" } },
-                { "Safety", new List<string> { "harassment", "ragging", "fight", "security", "threat" } }
+                { "Hostel",     "food mess wifi room cleaning water bed bathroom accommodation hostel warden dormitory" },
+                { "Academic",   "marks grade faculty attendance syllabus exam lecture class assignment result semester" },
+                { "Department", "hod head department transfer promotion discrimination staff department issue complaint professor internal" },
+                { "Facilities", "ac projector bench library lab infrastructure internet light fan equipment maintenance repairs" },
+                { "Safety",     "harassment ragging fight security threat abuse bullying unsafe danger violence intimidate" },
             };
 
-            var maxMatch = 0;
             var bestCategory = "General";
+            double maxCosine = 0;
 
-            foreach (var category in categories)
+            foreach (var category in categoryCorpus)
             {
-                int matchCount = category.Value.Count(word => lowerText.Contains(word));
-                if (matchCount > maxMatch)
+                double similarity = CalculateCosineSimilarity(lowerText, category.Value);
+                if (similarity > maxCosine)
                 {
-                    maxMatch = matchCount;
+                    maxCosine    = similarity;
                     bestCategory = category.Key;
                 }
             }
 
-            return bestCategory;
+            // Only classify if similarity exceeds threshold, otherwise use category selected by user
+            return maxCosine > 0.05 ? bestCategory : "General";
         }
+
 
         // 2. Priority Prediction
         public string PredictPriority(string complaintText)
@@ -83,7 +86,7 @@ namespace EGrievanceApi.Services
             double maxSim = 0;
             foreach (var past in userHistory)
             {
-                var sim = CalculateSimilarity(past.Description, newComplaintText);
+                var sim = CalculateCosineSimilarity(past.Description, newComplaintText);
                 if (sim > maxSim) maxSim = sim;
             }
             double duplicateFactor = (1.0 - maxSim) * 100; 
@@ -105,7 +108,7 @@ namespace EGrievanceApi.Services
 
             foreach (var grievance in allGrievances)
             {
-                if (CalculateSimilarity(grievance.Description, newComplaintText) > 0.75) // 75% similarity threshold
+                if (CalculateCosineSimilarity(grievance.Description, newComplaintText) > 0.40) // Adjusted threshold for cosine map
                 {
                     duplicates.Add(grievance);
                 }
@@ -133,7 +136,7 @@ namespace EGrievanceApi.Services
             {
                 for (int j = i + 1; j < userHistory.Count; j++)
                 {
-                    if (CalculateSimilarity(userHistory[i].Description, userHistory[j].Description) > 0.8)
+                    if (CalculateCosineSimilarity(userHistory[i].Description, userHistory[j].Description) > 0.6)
                         duplicateCount++;
                 }
             }
@@ -156,16 +159,48 @@ namespace EGrievanceApi.Services
             return insight.Trim();
         }
 
-        // Simulated Cosine Similarity Function
-        private double CalculateSimilarity(string text1, string text2)
+        // Mathematical TF-IDF and Cosine Similarity Function
+        private double CalculateCosineSimilarity(string text1, string text2)
         {
-            var words1 = Regex.Split(text1.ToLower(), @"\W+").Where(s => s != string.Empty);
-            var words2 = Regex.Split(text2.ToLower(), @"\W+").Where(s => s != string.Empty);
+            var words1 = Regex.Split(text1.ToLower(), @"\W+").Where(s => s != string.Empty).ToList();
+            var words2 = Regex.Split(text2.ToLower(), @"\W+").Where(s => s != string.Empty).ToList();
 
-            var intersection = words1.Intersect(words2).Count();
-            var union = words1.Union(words2).Count();
+            if (!words1.Any() || !words2.Any()) return 0.0;
 
-            return union == 0 ? 0 : (double)intersection / union;
+            var allWords = words1.Union(words2).Distinct().ToList();
+
+            // Compute TF (Term Frequency) Vectors
+            var vector1 = new double[allWords.Count];
+            var vector2 = new double[allWords.Count];
+
+            for (int i = 0; i < allWords.Count; i++)
+            {
+                string word = allWords[i];
+                double tf1 = (double)words1.Count(w => w == word) / words1.Count;
+                double tf2 = (double)words2.Count(w => w == word) / words2.Count;
+                
+                // Simple IDF simulation (inverse document frequency approximation)
+                double idf = Math.Log10(2.0 / ((words1.Contains(word) ? 1 : 0) + (words2.Contains(word) ? 1 : 0)));
+
+                vector1[i] = tf1 * idf;
+                vector2[i] = tf2 * idf;
+            }
+
+            // Dot Product and Magnitudes
+            double dotProduct = 0;
+            double mag1 = 0;
+            double mag2 = 0;
+
+            for (int i = 0; i < allWords.Count; i++)
+            {
+                dotProduct += vector1[i] * vector2[i];
+                mag1 += Math.Pow(vector1[i], 2);
+                mag2 += Math.Pow(vector2[i], 2);
+            }
+
+            if (mag1 == 0 || mag2 == 0) return 0;
+
+            return dotProduct / (Math.Sqrt(mag1) * Math.Sqrt(mag2));
         }
     }
 }

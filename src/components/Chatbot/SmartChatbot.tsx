@@ -3,21 +3,17 @@ import { MessageSquare, X, Send, Bot, ShieldCheck } from 'lucide-react';
 
 type Msg = { sender: 'bot' | 'user'; text: string };
 
-const getReply = (text: string): string => {
-  const t = text.toLowerCase();
-  if (t.includes('hostel')||t.includes('food')||t.includes('room')||t.includes('mess')||t.includes('wifi'))
-    return 'That sounds like a Hostel issue. Select "Hostel" to route it to the Warden automatically.';
-  if (t.includes('mark')||t.includes('grade')||t.includes('exam')||t.includes('result')||t.includes('class'))
-    return 'This appears to be an Academic grievance. Select "Academic" to route it to the Faculty or Dean.';
-  if (t.includes('fee')||t.includes('payment')||t.includes('portal')||t.includes('admission'))
-    return 'This sounds like an Admin issue. Select "Admin / Administration" to route it to the office.';
-  if (t.includes('harass')||t.includes('threat')||t.includes('bully')||t.includes('safe'))
-    return '⚠️ Safety concern detected. Select "Safety & Conduct" — it will be escalated immediately as high priority.';
-  if (t.includes('status')||t.includes('update')||t.includes('tracking'))
-    return 'Check your complaint status under "My Complaints" in the sidebar. Each complaint has a unique Tracking ID.';
-  if (t.includes('anon')||t.includes('identity')||t.includes('private')||t.includes('secret'))
-    return 'Your identity is protected by default for Faculty/Warden viewers. Only Admins with oversight can access your real ID.';
-  return "I can help route your complaint. Try describing your issue — e.g., \"mess food quality\" or \"exam result dispute\".";
+import api from '../../services/api';
+
+// Live endpoint call to ASP.NET Core AI Chatbot Service
+const getReply = async (text: string): Promise<string> => {
+  try {
+    const res = await api.post('/chatbot/ask', { message: text });
+    return res.data.response;
+  } catch (err) {
+    console.error("Chatbot API failed", err);
+    return "I am currently unable to process requests due to a connectivity issue. Please try again later.";
+  }
 };
 
 // ── Stitch "Emerald Sentinel" Glass Tokens ──────────────────────────────────
@@ -44,16 +40,18 @@ const SmartChatbot = () => {
 
   useEffect(() => { if (isOpen) endRef.current?.scrollIntoView({ behavior:'smooth' }); }, [messages, isOpen, isTyping]);
 
-  const handleSend = (e: React.FormEvent) => {
+  const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
     const text = input.trim();
     setMessages(p => [...p, { sender:'user', text }]);
     setInput(''); setIsTyping(true);
-    setTimeout(() => {
-      setIsTyping(false);
-      setMessages(p => [...p, { sender:'bot', text: getReply(text) }]);
-    }, 900);
+    
+    // Call the intelligent backend AI pipeline
+    const replyText = await getReply(text);
+    
+    setIsTyping(false);
+    setMessages(p => [...p, { sender:'bot', text: replyText }]);
   };
 
   const isStudent = localStorage.getItem('userRole') !== 'Faculty' && localStorage.getItem('userRole') !== 'Dean' && localStorage.getItem('userRole') !== 'HostelDean' && localStorage.getItem('userRole') !== 'Admin';

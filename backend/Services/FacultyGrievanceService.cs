@@ -26,15 +26,19 @@ namespace EGrievanceApi.Services
         // 1. GET FACULTY GRIEVANCES (Anonymity-safe, Filtered)
         // ─────────────────────────────────────────────────────────────
         public async Task<IEnumerable<FacultyGrievanceDto>> GetFacultyGrievancesAsync(
+            string   assignedRole,
             string?  priority = null,
             string?  status   = null,
             string?  category = null,
             string   sort     = "latest")
         {
+            if (assignedRole != "Faculty" && assignedRole != "Warden")
+                throw new InvalidOperationException("Only Faculty and Warden roles are supported by this endpoint.");
+
             // Query — NO .Include(g => g.User) to prevent accidental identity leakage
             var query = _context.Grievances
                 .AsNoTracking()
-                .Where(g => g.AssignedTo == "Faculty" || g.AssignedTo == "Warden");
+                .Where(g => g.AssignedTo == assignedRole);
 
             // Apply filters
             if (!string.IsNullOrEmpty(priority))
@@ -161,11 +165,14 @@ namespace EGrievanceApi.Services
         // ─────────────────────────────────────────────────────────────
         // 3. FACULTY ANALYTICS
         // ─────────────────────────────────────────────────────────────
-        public async Task<FacultyAnalyticsDto> GetFacultyAnalyticsAsync()
+        public async Task<FacultyAnalyticsDto> GetFacultyAnalyticsAsync(string assignedRole)
         {
+            if (assignedRole != "Faculty" && assignedRole != "Warden")
+                throw new InvalidOperationException("Only Faculty and Warden roles are supported by this endpoint.");
+
             var grievances = await _context.Grievances
                 .AsNoTracking()
-                .Where(g => g.AssignedTo == "Faculty" || g.AssignedTo == "Warden")
+                .Where(g => g.AssignedTo == assignedRole)
                 .ToListAsync();
 
             var resolved = grievances.Where(g => g.Status == "Resolved").ToList();

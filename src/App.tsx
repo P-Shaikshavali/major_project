@@ -9,44 +9,70 @@ import ComplaintList      from './pages/ComplaintList';
 import FacultyDashboard   from './pages/FacultyDashboard';
 import AuthorityDashboard from './pages/AuthorityDashboard';
 import DeanDashboard      from './pages/DeanDashboard';
+import HODDashboard       from './pages/HODDashboard';
 import HostelDeanDashboard from './pages/HostelDeanDashboard';
 import AdminAnalytics     from './pages/AdminAnalytics';
 import DashboardLayout    from './components/Layout/DashboardLayout';
 import SmartChatbot       from './components/Chatbot/SmartChatbot';
+
+// ── Protected Route Guard ────────────────────────────────────────────────────
+// Redirects to /login if JWT token is missing. Also attaches token to every
+// api call automatically via api.ts interceptor.
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    return <Navigate to="/login?reason=session_expired" replace />;
+  }
+  return <>{children}</>;
+};
 
 function App() {
   return (
     <ThemeProvider>
       <BrowserRouter>
         <Routes>
+          {/* Public routes */}
           <Route path="/"      element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
 
-          {/* Dashboard Routes — all roles under one DashboardLayout */}
-          <Route path="/dashboard" element={<DashboardLayout />}>
-            <Route index          element={<Navigate to="/dashboard/student" replace />} />
+          {/* Protected Dashboard Routes — JWT required */}
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<Navigate to="/dashboard/student" replace />} />
 
             {/* Student */}
-            <Route path="student"     element={<StudentDashboard />} />
-            <Route path="profile"     element={<StudentProfile />} />
-            <Route path="submit"      element={<SubmitComplaint />} />
-            <Route path="list"        element={<ComplaintList />} />
+            <Route path="student"   element={<StudentDashboard />} />
+            <Route path="profile"   element={<StudentProfile />} />
+            <Route path="submit"    element={<SubmitComplaint />} />
+            <Route path="list"      element={<ComplaintList />} />
 
             {/* Faculty */}
-            <Route path="faculty"     element={<FacultyDashboard />} />
+            <Route path="faculty"   element={<FacultyDashboard />} />
 
-            {/* Shared authority queue (Faculty, Dean, HostelDean, Admin) */}
-            <Route path="authority"   element={<AuthorityDashboard />} />
+            {/* Shared authority queue */}
+            <Route path="authority" element={<AuthorityDashboard />} />
 
             {/* Dean */}
-            <Route path="dean"        element={<DeanDashboard />} />
+            <Route path="dean"      element={<DeanDashboard />} />
 
-            {/* Hostel Dean */}
-            <Route path="hosteldean"  element={<HostelDeanDashboard />} />
+            {/* Hostel Dean / Warden */}
+            <Route path="hosteldean" element={<HostelDeanDashboard />} />
+
+            {/* HOD */}
+            <Route path="hod"       element={<HODDashboard />} />
 
             {/* Admin */}
-            <Route path="admin"       element={<AdminAnalytics />} />
+            <Route path="admin"     element={<AdminAnalytics />} />
           </Route>
+
+          {/* Catch-all — send unknown routes to home */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
 
         {/* Global AI Chatbot FAB — visible on all pages */}

@@ -7,59 +7,92 @@ namespace EGrievanceApi.Services
 {
     public class GrievanceService : IGrievanceService
     {
-        private readonly ApplicationDbContext _context;
-        private readonly IAIEngineService _aiEngine;
-        private readonly IGrievanceRoutingService _routingService;
-        private readonly IAnonymityService _anonymityService;
-
-        public GrievanceService(ApplicationDbContext context, IAIEngineService aiEngine, IGrievanceRoutingService routingService, IAnonymityService anonymityService)
+        private static readonly HashSet<string> AllowedStatuses = new(StringComparer.OrdinalIgnoreCase)
         {
-            _context = context;
-            _aiEngine = aiEngine;
-            _routingService = routingService;
+            "Submitted", "InProgress", "Resolved", "Escalated"
+        };
+
+        private readonly ApplicationDbContext    _context;
+        private readonly IAIEngineService        _aiEngine;
+        private readonly IGrievanceRoutingService _routingService;
+        private readonly IAnonymityService       _anonymityService;
+
+        public GrievanceService(
+            ApplicationDbContext context,
+            IAIEngineService aiEngine,
+            IGrievanceRoutingService routingService,
+            IAnonymityService anonymityService)
+        {
+            _context          = context;
+            _aiEngine         = aiEngine;
+            _routingService   = routingService;
             _anonymityService = anonymityService;
         }
 
+        // ── CREATE ────────────────────────────────────────────────────────────
         public async Task<Grievance> CreateGrievanceAsync(int userId, CreateGrievanceDto request)
         {
-            // 1. Generate Tracking ID
-            var lastGrievance = await _context.Grievances.OrderByDescending(g => g.Id).FirstOrDefaultAsync();
-            int newIdNum = (lastGrievance?.Id ?? 0) + 1;
-            string trackingId = $"GRV-{newIdNum:D4}";
+            // 1. Generate unique Tracking ID
+            var last    = await _context.Grievances.OrderByDescending(g => g.Id).FirstOrDefaultAsync();
+            string trackingId = $"GRV-{((last?.Id ?? 0) + 1):D4}";
 
-            // 2. AI Engine Pipeline
-            var category = _aiEngine.ClassifyCategory(request.Description);
-            var priority = _aiEngine.PredictPriority(request.Description);
-            var credibility = await _aiEngine.CalculateCredibilityScoreAsync(userId, request.Description);
-            var assignedTo = _routingService.DetermineAssignedRole(category);
+            // 2. AI Pipeline & Manual Tag Extraction
+            string category = "General";
+            string desc = request.Description;
 
-            // 3. Create Record
+            // Check for manual category override from frontend selection
+            if (desc.StartsWith("[CATEGORY:", StringComparison.OrdinalIgnoreCase))
+            {
+                int end = desc.IndexOf(']');
+                if (end > 10)
+                {
+                    category = desc.Substring(10, end - 10).Trim();
+                    desc = desc.Substring(end + 1).Trim(); // Strip tag for storage
+                }
+            }
+            else
+            {
+                category = _aiEngine.ClassifyCategory(desc);
+            }
+
+            var priority    = _aiEngine.PredictPriority(desc);
+            var credibility = await _aiEngine.CalculateCredibilityScoreAsync(userId, desc);
+            var assignedTo  = _routingService.DetermineAssignedRole(category);
+
+
+            // 3. High priority → flag escalated so Admin always sees it
+            bool isEscalated = priority == "High";
+
+            // 4. Persist
             var grievance = new Grievance
             {
-                TrackingId = trackingId,
-                AnonymousId = _anonymityService.GenerateAnonymousId(),
-                UserId = userId,
-                Description = request.Description,
-                Category = category,
-                Priority = priority,
+                TrackingId       = trackingId,
+                AnonymousId      = _anonymityService.GenerateAnonymousId(),
+                UserId           = userId,
+                Description      = desc,
+                Category         = category,
+
+                Priority         = priority,
                 CredibilityScore = credibility,
-                AssignedTo = assignedTo
+                AssignedTo       = assignedTo,
+                IsEscalated      = isEscalated
             };
 
             _context.Grievances.Add(grievance);
-            
-            // 4. Audit Log
-            _context.AuditLogs.Add(new AuditLog 
-            { 
-                Action = "GrievanceCreated", 
-                UserId = userId, 
-                Details = $"Created Grievance {trackingId} to Category {category}"
+
+            // 5. Audit
+            _context.AuditLogs.Add(new AuditLog
+            {
+                Action  = "GrievanceCreated",
+                UserId  = userId,
+                Details = $"Created {trackingId} — Category: {category}, Priority: {priority}, AssignedTo: {assignedTo}"
             });
 
             await _context.SaveChangesAsync();
             return grievance;
         }
 
+        // ── GET MINE ──────────────────────────────────────────────────────────
         public async Task<IEnumerable<Grievance>> GetMyGrievancesAsync(int userId)
         {
             return await _context.Grievances
@@ -70,6 +103,7 @@ namespace EGrievanceApi.Services
                 .ToListAsync();
         }
 
+        // ── GET ALL ───────────────────────────────────────────────────────────
         public async Task<IEnumerable<Grievance>> GetAllGrievancesAsync()
         {
             return await _context.Grievances
@@ -79,24 +113,25 @@ namespace EGrievanceApi.Services
                 .ToListAsync();
         }
 
+        // ── UPDATE STATUS ─────────────────────────────────────────────────────
         public async Task<Grievance> UpdateStatusAsync(int grievanceId, string newStatus, int authorityUserId)
         {
-            var grievance = await _context.Grievances.FindAsync(grievanceId);
-            if (grievance == null) throw new Exception("Grievance not found");
+            var grievance = await _context.Grievances.FindAsync(grievanceId)
+                ?? throw new Exception("Grievance not found");
 
-            var oldStatus = grievance.Status;
-            grievance.Status = newStatus;
-            
-            if (newStatus == "Resolved")
+            if (string.IsNullOrWhiteSpace(newStatus) || !AllowedStatuses.Contains(newStatus))
+                throw new Exception("Invalid status. Allowed: Submitted, InProgress, Resolved, Escalated.");
+
+            var oldStatus     = grievance.Status;
+            grievance.Status  = newStatus;
+            grievance.ResolvedAt = newStatus == "Resolved" ? DateTime.UtcNow : null;
+            grievance.IsEscalated = string.Equals(newStatus, "Escalated", StringComparison.OrdinalIgnoreCase);
+
+            _context.AuditLogs.Add(new AuditLog
             {
-                grievance.ResolvedAt = DateTime.UtcNow;
-            }
-
-            _context.AuditLogs.Add(new AuditLog 
-            { 
-                Action = "StatusUpdated", 
-                UserId = authorityUserId, 
-                Details = $"Updated {grievance.TrackingId} status from {oldStatus} to {newStatus}"
+                Action  = "StatusUpdated",
+                UserId  = authorityUserId,
+                Details = $"Updated {grievance.TrackingId}: {oldStatus} → {newStatus}"
             });
 
             await _context.SaveChangesAsync();
