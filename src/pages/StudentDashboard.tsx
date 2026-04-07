@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { PlusCircle, FolderOpen, Brain, TrendingUp, ChevronRight, ShieldCheck, Zap } from 'lucide-react';
+import { PlusCircle, FolderOpen, Brain, TrendingUp, ChevronRight, ShieldCheck, Zap, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 // @ts-ignore
 import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
@@ -34,8 +34,14 @@ const CHART_COLORS = [DS.blue, DS.green, DS.amber, '#6366F1', '#8B5CF6'];
 const STATUS_COLORS: Record<string, string> = { Resolved: DS.green, Submitted: DS.blue, InProgress: DS.amber, Escalated: DS.red };
 const STATUS_BGS: Record<string, string> = { Resolved: DS.greenLight, Submitted: DS.blueLight, InProgress: DS.amberLight, Escalated: DS.redLight };
 
+<<<<<<< HEAD
 const KpiCard = ({ icon, label, value, color, bg }: any) => (
   <div className="glass-card kpi-hover" style={{ background: 'rgba(255, 255, 255, 0.75)', borderRadius: DS.radiusCard, padding: '24px', boxShadow: DS.shadowAmbient, display: 'flex', flexDirection: 'column', gap: 16, border: '1px solid rgba(255,255,255,0.8)', backdropFilter: 'blur(20px)', transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)' }}>
+=======
+interface KpiCardProps { icon: React.ReactNode; label: string; value: number | string; color: string; bg: string; }
+const KpiCard = ({ icon, label, value, color, bg }: KpiCardProps) => (
+  <div style={{ background: DS.surface, borderRadius: DS.radiusCard, padding: '24px', boxShadow: DS.shadowAmbient, display: 'flex', flexDirection: 'column', gap: 16, border: '1px solid rgba(255,255,255,0.8)' }}>
+>>>>>>> 43f09aa (Fix grievance routing logic: category mapping, AI classification override, and exhaustive integration tests)
     <div style={{ width: 44, height: 44, borderRadius: 14, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color }}>{icon}</div>
     <div>
       <p style={{ fontFamily: "'Manrope', sans-serif", fontSize: 32, fontWeight: 800, color: DS.text, letterSpacing: '-0.03em', lineHeight: 1 }}>{value}</p>
@@ -44,9 +50,27 @@ const KpiCard = ({ icon, label, value, color, bg }: any) => (
   </div>
 );
 
+interface DashboardData {
+  totalComplaints: number;
+  pending: number;
+  inProgress: number;
+  resolved: number;
+  categoryDistribution: { category: string; count: number }[];
+  recentComplaints: { trackingId: string; category: string; status: string; createdAt: string, description?: string }[];
+  monthlyTrends?: { month: string; count: number }[];
+  behavioralAnalytics?: {
+    avgResolutionHours: number;
+    reliabilityScore: number;
+    escalationRate: number;
+    averageCredibility: number;
+    resolutionEfficiency: number;
+  };
+}
+
 const StudentDashboard = () => {
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<DashboardData | null>(null);
   const navigate = useNavigate();
+  const [feeStatus, setFeeStatus] = useState<{ status: string; semester: string; dueDate: string; needsAttention: boolean } | null>(null);
 
   const fetchData = async () => {
     try {
@@ -56,6 +80,7 @@ const StudentDashboard = () => {
   };
 
   useEffect(() => {
+<<<<<<< HEAD
     fetchData(); // initial loaded state
     
     // 🔥 Attach SignalR Native Pipeline
@@ -70,6 +95,10 @@ const StudentDashboard = () => {
     }).catch(console.error);
 
     return () => { connection.stop(); };
+=======
+    api.get('/dashboard/student').then(r => setData(r.data)).catch(console.error);
+    api.get('/fee/my-status').then(r => setFeeStatus(r.data)).catch(() => {});
+>>>>>>> 43f09aa (Fix grievance routing logic: category mapping, AI classification override, and exhaustive integration tests)
   }, []);
 
   const kpis = [
@@ -79,7 +108,7 @@ const StudentDashboard = () => {
     { icon: <ShieldCheck size={22} />,label: 'Resolved',         value: data?.resolved ?? 0,         color: DS.green, bg: DS.greenLight },
   ];
 
-  const categoryData = data?.categoryDistribution?.map((c:any) => ({ name:c.category, value:c.count })) || [
+  const categoryData = data?.categoryDistribution?.map((c:{category:string, count:number}) => ({ name:c.category, value:c.count })) || [
     { name:'Academic', value:4 }, { name:'Hostel', value:6 }, { name:'Admin', value:3 }, { name:'Safety', value:2 },
   ];
   const monthlyData = data?.monthlyTrends || [
@@ -93,6 +122,7 @@ const StudentDashboard = () => {
   };
 
   return (
+<<<<<<< HEAD
     <div style={{ padding: '40px 48px', minHeight: '100vh', background: 'transparent', fontFamily: "'Inter', sans-serif", position: 'relative', zIndex: 1 }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600&display=swap');
@@ -100,6 +130,31 @@ const StudentDashboard = () => {
         .lux-text { background: linear-gradient(135deg, ${DS.blueDark}, ${DS.blue}); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
       `}</style>
       
+=======
+    <div style={{ padding: '40px 48px', minHeight: '100vh', background: DS.bg, fontFamily: "'Inter', sans-serif" }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600&display=swap');`}</style>
+
+      {/* Fee Reminder Banner */}
+      {feeStatus?.needsAttention && (
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 14,
+          background: feeStatus.status === 'Overdue' ? DS.redLight : DS.amberLight,
+          border: `1px solid ${feeStatus.status === 'Overdue' ? DS.red : DS.amber}40`,
+          borderRadius: 14, padding: '14px 20px', marginBottom: 24,
+        }}>
+          <AlertTriangle size={20} color={feeStatus.status === 'Overdue' ? DS.red : DS.amber} style={{ flexShrink: 0 }} />
+          <div>
+            <p style={{ fontWeight: 700, fontSize: 14, color: feeStatus.status === 'Overdue' ? DS.red : DS.amber }}>
+              {feeStatus.status === 'Overdue' ? '🚨 Fee Overdue!' : '⚠️ Fee Payment Reminder'}
+            </p>
+            <p style={{ fontSize: 13, color: DS.textMuted, marginTop: 2 }}>
+              Your <strong>{feeStatus.semester}</strong> semester fee is <strong>{feeStatus.status}</strong>.
+              Due date: <strong>{new Date(feeStatus.dueDate).toLocaleDateString()}</strong>. Please contact the Admin office.
+            </p>
+          </div>
+        </div>
+      )}
+>>>>>>> 43f09aa (Fix grievance routing logic: category mapping, AI classification override, and exhaustive integration tests)
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 40 }}>
         <div>
@@ -135,13 +190,13 @@ const StudentDashboard = () => {
           <ResponsiveContainer width="100%" height={240}>
             <PieChart>
               <Pie data={categoryData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} dataKey="value" stroke="none" paddingAngle={2}>
-                {categoryData.map((_:any, i:number) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
+                {categoryData.map((_:{name:string, value:number}, i:number) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
               </Pie>
               <Tooltip contentStyle={{ fontSize: 13, borderRadius: DS.radiusBtn, border: 'none', boxShadow: DS.shadowAmbient, fontWeight: 500 }} itemStyle={{ color: DS.text }} />
             </PieChart>
           </ResponsiveContainer>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px 20px', justifyContent: 'center', marginTop: 16 }}>
-            {categoryData.map((c:any, i:number) => (
+            {categoryData.map((c:{name:string, value:number}, i:number) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span style={{ width: 10, height: 10, borderRadius: '50%', background: CHART_COLORS[i % CHART_COLORS.length] }} />
                 <span style={{ fontSize: 13, color: DS.textMuted, fontWeight: 500 }}>{c.name}</span>
@@ -183,7 +238,7 @@ const StudentDashboard = () => {
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {data.recentComplaints.slice(0, 5).map((c:any, i:number) => (
+              {data.recentComplaints.slice(0, 5).map((c:{trackingId: string, category: string, status: string, createdAt: string}, i:number) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', padding: '16px', background: DS.surfaceLow, borderRadius: 12, gap: 16 }}>
                   <div style={{ width: 10, height: 10, borderRadius: '50%', background: STATUS_COLORS[c.status] || DS.textFaint, flexShrink: 0 }} />
                   <div style={{ flex: 1, minWidth: 0 }}>

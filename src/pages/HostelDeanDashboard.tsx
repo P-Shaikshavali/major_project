@@ -41,6 +41,7 @@ const STATUS_MAP: Record<string, { bg: string; color: string; label: string }> =
   Escalated:  { bg: DS.redLight,     color: DS.red,        label: 'Escalated'   },
 };
 
+<<<<<<< HEAD
 const PRIORITY_MAP: Record<string, { bg: string; color: string; dot: string }> = {
   High:   { bg: DS.redLight,    color: DS.red,    dot: '#EF4444' },
   Medium: { bg: DS.amberLight,  color: DS.amber,  dot: '#F59E0B' },
@@ -60,6 +61,16 @@ const KpiCard = ({ icon, label, value, color, bg }: any) => (
     <div style={{ width: 38, height: 38, borderRadius: DS.radiusSm, background: bg, color, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>{icon}</div>
     <p style={{ fontSize: 32, fontWeight: 800, color: DS.charcoal, lineHeight: 1 }}>{value}</p>
     <p style={{ fontSize: 12, color: DS.textMuted, marginTop: 6, fontWeight: 600 }}>{label}</p>
+=======
+interface KpiCardProps { icon: React.ReactNode; label: string; value: number | string; color: string; bg: string; }
+const KpiCard = ({ icon, label, value, color, bg }: KpiCardProps) => (
+  <div style={{ background: DS.surface, borderRadius: DS.radiusCard, padding: '24px', boxShadow: DS.shadowAmbient, display: 'flex', flexDirection: 'column', gap: 16, border: '1px solid rgba(255,255,255,0.8)' }}>
+    <div style={{ width: 44, height: 44, borderRadius: 14, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color }}>{icon}</div>
+    <div>
+      <p style={{ fontFamily: "'Manrope', sans-serif", fontSize: 32, fontWeight: 800, color: DS.text, letterSpacing: '-0.03em', lineHeight: 1 }}>{value}</p>
+      <p style={{ fontSize: 13, color: DS.textMuted, marginTop: 6, fontWeight: 500 }}>{label}</p>
+    </div>
+>>>>>>> 43f09aa (Fix grievance routing logic: category mapping, AI classification override, and exhaustive integration tests)
   </div>
 );
 
@@ -73,10 +84,70 @@ function ExpandedComplaintCard({ complaint: c, onUpdate }: any) {
   const sc = STATUS_MAP[c.status] || STATUS_MAP.Submitted;
   const pc = PRIORITY_MAP[c.priority] || PRIORITY_MAP.Low;
 
+<<<<<<< HEAD
   const saveAction = () => {
     onUpdate(c.id, valStatus, valNote, valEsc);
     setExpanded(false);
   }
+=======
+interface GrievanceItem {
+  id: number;
+  status: string;
+  priority: string;
+  category: string;
+  trackingId: string;
+  createdAt: string;
+  description: string;
+  assignedTo?: string;
+  anonymousId?: string;
+  [key: string]: unknown;
+}
+
+const HostelDeanDashboard = () => {
+  const [complaints, setComplaints] = useState<GrievanceItem[]>([]);
+  const [loading, setLoading]       = useState(true);
+  const [activeTab, setActiveTab]   = useState<'all' | 'pending' | 'resolved'>('pending');
+  const [updatingId, setUpdatingId] = useState<number | null>(null);
+
+  useEffect(() => {
+    api.get('/dashboard/authority')
+      .then(r => {
+        const data = r.data?.queue || r.data?.Queue || (Array.isArray(r.data) ? r.data : []);
+        // Hostel Dean sees hostel-category complaints
+        const filtered = data.filter((c: GrievanceItem) =>
+          HOSTEL_CATS.includes(c.category) || c.assignedTo === 'Warden'
+        );
+        setComplaints(filtered);
+      })
+      .catch(() => setComplaints([]))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const updateStatus = async (id: number, status: string) => {
+    setUpdatingId(id);
+    try {
+      await api.put(`/faculty/update-status/${id}`, { newStatus: status, resolutionNote: '', recommendEscalation: false });
+      setComplaints(p => p.map(c => (c.id === id ? { ...c, status } : c)));
+    } catch (e) { console.error(e); }
+    finally { setUpdatingId(null); }
+  };
+
+  const pending  = complaints.filter(c => c.status === 'Submitted' || c.status === 'InProgress');
+  const resolved = complaints.filter(c => c.status === 'Resolved');
+  const listToShow = activeTab === 'pending' ? pending : activeTab === 'resolved' ? resolved : complaints;
+
+  const kpis = [
+    { icon: <ClipboardList size={22}/>,  label: 'Hostel Complaints', value: complaints.length,           color: DS.emerald, bg: DS.emeraldLight },
+    { icon: <AlertTriangle size={22}/>,  label: 'Pending Action',    value: pending.length,              color: DS.amber,   bg: DS.amberLight },
+    { icon: <TrendingUp size={22}/>,     label: 'Escalated Issues',  value: complaints.filter(c => c.isEscalated).length, color: DS.red,     bg: DS.redLight },
+    { icon: <CheckCircle size={22}/>,    label: 'Resolved',          value: resolved.length,             color: DS.blue,    bg: DS.blueLight },
+  ];
+
+  const cardStyle = {
+    background: DS.surface, borderRadius: DS.radiusCard, padding: 32, 
+    boxShadow: DS.shadowAmbient, border: '1px solid rgba(255,255,255,0.8)'
+  };
+>>>>>>> 43f09aa (Fix grievance routing logic: category mapping, AI classification override, and exhaustive integration tests)
 
   return (
     <div style={{ background: DS.surface, borderRadius: DS.radius, boxShadow: DS.shadow, overflow: 'hidden' }}>
@@ -99,6 +170,7 @@ function ExpandedComplaintCard({ complaint: c, onUpdate }: any) {
                 <span><Clock size={12} style={{ display:'inline', marginRight: 4 }} /> {new Date(c.createdAt).toLocaleDateString()}</span>
              </div>
           </div>
+<<<<<<< HEAD
           <button onClick={() => setExpanded(!expanded)} style={{ flexShrink: 0, padding: '8px 16px', borderRadius: 8, background: expanded ? DS.emeraldLight : DS.bg, border: `1px solid ${expanded ? DS.emerald : DS.surfaceLow}`, color: expanded ? DS.emeraldDark : DS.text, fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', gap: 6, alignItems: 'center' }}>
              {expanded ? 'Close Action' : 'Take Action'} <ChevronDown size={14} style={{ transform: expanded ? 'rotate(180deg)' : 'none' }} />
           </button>
@@ -114,6 +186,65 @@ function ExpandedComplaintCard({ complaint: c, onUpdate }: any) {
                    <label style={{ fontSize: 12, fontWeight: 700, display: 'block', marginBottom: 8 }}>Target Status</label>
                    <select value={valStatus} onChange={e => setValStatus(e.target.value)} style={{ width: '100%', padding: 10, borderRadius: 8, border: `1px solid ${DS.surfaceLow}`, fontSize: 14 }}>
                       <option value="Submitted">Submitted (Pending)</option>
+=======
+
+          {/* Tab bar */}
+          <div style={{ display: 'flex', gap: 10, marginBottom: 24, borderBottom: `2px solid ${DS.surfaceLow}`, paddingBottom: 16 }}>
+            {([['pending','Pending'], ['resolved','Resolved'], ['all','All']] as const).map(([key, label]) => (
+              <button key={key} onClick={() => setActiveTab(key)}
+                style={{ 
+                  padding: '10px 24px', borderRadius: 40, border: 'none', fontSize: 13, fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s',
+                  background: activeTab === key ? DS.text : 'transparent', color: activeTab === key ? '#FFFFFF' : DS.textFaint 
+                }}>
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '64px 0', color: DS.textMuted }}>
+              <RefreshCw size={24} style={{ margin: '0 auto 12px', animation: 'spin 1s linear infinite', color: DS.emerald }} />
+              <p style={{ fontSize: 14, fontWeight: 500 }}>Fetching hostel records...</p>
+            </div>
+          ) : listToShow.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '64px 0', color: DS.textFaint }}>
+              <ShieldCheck size={40} style={{ margin: '0 auto 16px', color: DS.emerald, opacity: 0.8 }} />
+              <p style={{ fontFamily: "'Manrope', sans-serif", fontSize: 18, fontWeight: 800, color: DS.text, letterSpacing: '-0.01em', marginBottom: 4 }}>Queue Clear</p>
+              <p style={{ fontSize: 14 }}>No actionable items in this filter block.</p>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {listToShow.map((c: GrievanceItem, i: number) => {
+                const sc = STATUS_MAP[c.status] || STATUS_MAP.Submitted;
+                return (
+                  <div key={i} style={{ 
+                    display: 'flex', alignItems: 'center', gap: 16, padding: '16px', 
+                    background: DS.surfaceLow, borderRadius: 12, transition: 'background 0.2s' 
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#F9FBFF'}
+                  onMouseLeave={e => e.currentTarget.style.background = DS.surfaceLow}>
+                    
+                    <div style={{ width: 10, height: 10, borderRadius: '50%', background: sc.text, flexShrink: 0 }} />
+                    
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+                        <p style={{ fontSize: 14, fontWeight: 700, color: DS.text, fontFamily: 'monospace', letterSpacing: '0.05em' }}>{c.trackingId}</p>
+                        <span style={{ fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 40, background: sc.bg, color: sc.text }}>{c.status}</span>
+                        <span style={{ fontSize: 11, fontWeight: 600, padding: '4px 12px', borderRadius: 40, background: DS.surface, color: DS.textMuted, border: `1px solid ${DS.surfaceHigh}` }}>{c.category}</span>
+                      </div>
+                      <p style={{ fontSize: 12, color: DS.textMuted, fontFamily: 'monospace', fontWeight: 600 }}>{c.anonymousId}</p>
+                    </div>
+                    
+                    <select value={c.status} disabled={updatingId === c.id}
+                      onChange={e => updateStatus(c.id, e.target.value)}
+                      style={{ 
+                        fontSize: 12, fontWeight: 700, padding: '8px 16px', borderRadius: DS.radiusBtn, 
+                        border: 'none', background: sc.bg, color: sc.text, 
+                        cursor: 'pointer', outline: 'none', transition: 'all 0.2s',
+                        boxShadow: `0 2px 8px rgba(0,0,0,0.04)`
+                      }}>
+                      <option value="Submitted">Submitted</option>
+>>>>>>> 43f09aa (Fix grievance routing logic: category mapping, AI classification override, and exhaustive integration tests)
                       <option value="InProgress">In Progress</option>
                       <option value="Resolved">Mark Resolved</option>
                    </select>

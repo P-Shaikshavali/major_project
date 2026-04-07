@@ -38,7 +38,11 @@ namespace EGrievanceApi.Services
             // Query — NO .Include(g => g.User) to prevent accidental identity leakage
             var query = _context.Grievances
                 .AsNoTracking()
+<<<<<<< HEAD
                 .Where(g => g.AssignedTo == assignedRole);
+=======
+                .Where(g => g.AssignedToRole == "Faculty" || g.AssignedToRole == "Warden");
+>>>>>>> 43f09aa (Fix grievance routing logic: category mapping, AI classification override, and exhaustive integration tests)
 
             // Apply filters
             if (!string.IsNullOrEmpty(priority))
@@ -90,7 +94,7 @@ namespace EGrievanceApi.Services
                     Description      = g.Description,
                     Priority         = g.Priority,
                     Status           = g.Status,
-                    AssignedTo       = g.AssignedTo,
+                    AssignedToRole   = g.AssignedToRole,
                     CreatedAt        = g.CreatedAt,
                     ResolvedAt       = g.ResolvedAt,
                     IsEscalated      = g.IsEscalated,
@@ -151,7 +155,7 @@ namespace EGrievanceApi.Services
                 Description      = grievance.Description,
                 Priority         = grievance.Priority,
                 Status           = grievance.Status,
-                AssignedTo       = grievance.AssignedTo,
+                AssignedToRole   = grievance.AssignedToRole,
                 CreatedAt        = grievance.CreatedAt,
                 ResolvedAt       = grievance.ResolvedAt,
                 IsEscalated      = grievance.IsEscalated,
@@ -172,7 +176,11 @@ namespace EGrievanceApi.Services
 
             var grievances = await _context.Grievances
                 .AsNoTracking()
+<<<<<<< HEAD
                 .Where(g => g.AssignedTo == assignedRole)
+=======
+                .Where(g => g.AssignedToRole == "Faculty" || g.AssignedToRole == "Warden")
+>>>>>>> 43f09aa (Fix grievance routing logic: category mapping, AI classification override, and exhaustive integration tests)
                 .ToListAsync();
 
             var resolved = grievances.Where(g => g.Status == "Resolved").ToList();

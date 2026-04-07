@@ -1,0 +1,109 @@
+﻿
+C:\Users\SHAIKSHAVALI\Downloads\MajorProj\src\components\Layout\DashboardLayout.tsx
+   5:26  error  'Moon' is defined but never used              @typescript-eslint/no-unused-vars
+   5:32  error  'Sun' is defined but never used               @typescript-eslint/no-unused-vars
+  59:16  error  'setDark' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\SHAIKSHAVALI\Downloads\MajorProj\src\context\ThemeContext.tsx
+  42:14  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\SHAIKSHAVALI\Downloads\MajorProj\src\hooks\useSessionSecurity.ts
+  29:31  error  Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\SHAIKSHAVALI\Downloads\MajorProj\src\hooks\useSessionSecurity.ts:29:31
+  27 |   const [sessionState, setSessionState] = useState<SessionState>('active');
+  28 |   const [timeLeft, setTimeLeft] = useState(TIMEOUT_MS / 1000);
+> 29 |   const lastActivity = useRef(Date.now());
+     |                               ^^^^^^^^^^ Cannot call impure function
+  30 |   const warnTimer    = useRef<ReturnType<typeof setTimeout>>();
+  31 |   const logoutTimer  = useRef<ReturnType<typeof setTimeout>>();
+  32 |   const ticker       = useRef<ReturnType<typeof setInterval>>();  react-hooks/purity
+
+C:\Users\SHAIKSHAVALI\Downloads\MajorProj\src\pages\AdminAnalytics.tsx
+  33:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\SHAIKSHAVALI\Downloads\MajorProj\src\pages\AuthorityDashboard.tsx
+   37:50  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  141:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\SHAIKSHAVALI\Downloads\MajorProj\src\pages\ComplaintList.tsx
+   36:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   51:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   55:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  125:93  error  'i' is defined but never used             @typescript-eslint/no-unused-vars
+
+C:\Users\SHAIKSHAVALI\Downloads\MajorProj\src\pages\DeanDashboard.tsx
+    3:89  error  'Shield' is defined but never used        @typescript-eslint/no-unused-vars
+   38:53  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   49:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  157:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  189:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\SHAIKSHAVALI\Downloads\MajorProj\src\pages\FacultyDashboard.tsx
+  151:46  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              @typescript-eslint/no-explicit-any
+  165:53  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              @typescript-eslint/no-explicit-any
+  201:31  error  Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\SHAIKSHAVALI\Downloads\MajorProj\src\pages\FacultyDashboard.tsx:201:31
+  199 |   const sc  = STATUS_MAP[c.status] ?? STATUS_MAP.Submitted;
+  200 |   const pc  = PRIORITY_MAP[c.priority] ?? PRIORITY_MAP.Low;
+> 201 |   const daysOld = Math.floor((Date.now() - new Date(c.createdAt).getTime()) / 86400000);
+      |                               ^^^^^^^^^^ Cannot call impure function
+  202 |
+  203 |   const handleSave = async () => {
+  204 |     setSaving(true);  react-hooks/purity
+  424:48  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              @typescript-eslint/no-explicit-any
+
+C:\Users\SHAIKSHAVALI\Downloads\MajorProj\src\pages\HostelDeanDashboard.tsx
+   35:53  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   55:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   64:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  167:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\SHAIKSHAVALI\Downloads\MajorProj\src\pages\LandingPage.tsx
+  2:28  error  'Clock' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\SHAIKSHAVALI\Downloads\MajorProj\src\pages\LoginPage.tsx
+  82:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  89:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\SHAIKSHAVALI\Downloads\MajorProj\src\pages\StudentDashboard.tsx
+   35:53  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   46:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   60:59  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  111:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  117:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  159:57  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\SHAIKSHAVALI\Downloads\MajorProj\src\pages\StudentProfile.tsx
+  29:60  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @typescript-eslint/no-explicit-any
+  46:42  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @typescript-eslint/no-explicit-any
+  47:46  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @typescript-eslint/no-explicit-any
+  48:42  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @typescript-eslint/no-explicit-any
+  55:5   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\SHAIKSHAVALI\Downloads\MajorProj\src\pages\StudentProfile.tsx:55:5
+  53 |       setHistory(res.data.recentComplaints || []);
+  54 |     }).catch(console.error);
+> 55 |     setProfile({ name: 'Student User', studentId: 'STU-2024-001', department: 'Computer Science', year: '3rd Year', role: 'Student' });
+     |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  56 |   }, []);
+  57 |
+  58 |   const credibility = Math.round(analytics?.averageCredibility || 0);  react-hooks/set-state-in-effect
+
+C:\Users\SHAIKSHAVALI\Downloads\MajorProj\src\pages\SubmitComplaint.tsx
+   2:10  error  'UploadCloud' is defined but never used   @typescript-eslint/no-unused-vars
+  89:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+Γ£û 41 problems (41 errors, 0 warnings)
+

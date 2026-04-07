@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, PlusCircle, ClipboardList, User,
@@ -36,6 +36,14 @@ const NAV_BY_ROLE: Record<string, { to: string; icon: React.ReactNode; label: st
     { to: '/dashboard/dean',       icon: <GraduationCap size={20} />,  label: 'Dean Dashboard'   },
     { to: '/dashboard/authority',  icon: <ClipboardList size={20} />,  label: 'All Complaints'   },
   ],
+  Warden: [
+    { to: '/dashboard/warden',    icon: <Home size={20} />,          label: 'Warden Dashboard' },
+    { to: '/dashboard/authority', icon: <ClipboardList size={20} />, label: 'HOD Queue'        },
+  ],
+  HOD: [
+    { to: '/dashboard/authority',  icon: <ClipboardList size={20} />, label: 'Complaint Queue'  },
+    { to: '/dashboard/dean',       icon: <ShieldCheck size={20} />,   label: 'Dean Overview'   },
+  ],
   Admin: [
     { to: '/dashboard/admin',      icon: <LayoutDashboard size={20} />, label: 'System Analytics' },
     { to: '/dashboard/authority',  icon: <ClipboardList size={20} />,   label: 'Complaint Queue'  },
@@ -44,6 +52,7 @@ const NAV_BY_ROLE: Record<string, { to: string; icon: React.ReactNode; label: st
 };
 
 const ROLE_LABELS: Record<string, string> = {
+<<<<<<< HEAD
   Student:    'Student Portal',
   Faculty:    'Faculty Portal',
   Warden:     'Warden Portal',
@@ -51,10 +60,16 @@ const ROLE_LABELS: Record<string, string> = {
   HOD:        'HOD Portal',
   Dean:       "Dean's Office",
   Admin:      'Admin Portal',
+=======
+  Student: 'Student Portal', Faculty: 'Faculty Portal', Dean: "Dean's Office",
+  HostelDean: 'Hostel Admin', Admin: 'Admin Portal',
+  Warden: 'Warden Control', HOD: 'HOD Portal',
+>>>>>>> 43f09aa (Fix grievance routing logic: category mapping, AI classification override, and exhaustive integration tests)
 };
 
 
 const DS = {
+<<<<<<< HEAD
   bg:             '#F8F9FA',
   surface:        '#FFFFFF',
   surfaceHigh:    '#E8ECF0',
@@ -71,22 +86,39 @@ const DS = {
   glass:          'rgba(255, 255, 255, 0.75)',
   glassDark:      'rgba(17, 24, 39, 0.85)',
   blur:           'blur(24px)',
+=======
+  bg: '#F8F9FA',
+  surface: '#FFFFFF',
+  surfaceHigh: '#FFFFFF',
+  blue: '#1A73E8',
+  blueLight: '#EBF3FD',
+  emerald: '#10B981',
+  emeraldDark: '#059669',
+  red: '#EF4444',
+  redLight: '#FEF2F2',
+  amber: '#F59E0B',
+  text: '#111827',
+  textMuted: '#414754',
+  textFaint: '#727785',
+  glass: 'rgba(255, 255, 255, 0.75)',
+  glassDark: 'rgba(17, 24, 39, 0.85)',
+  blur: 'blur(24px)',
+>>>>>>> 43f09aa (Fix grievance routing logic: category mapping, AI classification override, and exhaustive integration tests)
   shadowFloating: '0 24px 48px rgba(0,0,0,0.08)',
 };
 
 const DashboardLayout = () => {
   useNavigate(); // kept for future programmatic navigation
   const role = localStorage.getItem('userRole') || 'Student';
+<<<<<<< HEAD
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_dark] = useState(() => document.documentElement.classList.contains('dark'));
+=======
+>>>>>>> 43f09aa (Fix grievance routing logic: category mapping, AI classification override, and exhaustive integration tests)
   const { sessionState, timeLeft, extendSession, forceLogout } = useSessionSecurity();
 
   // Glassmorphic state: true = expanded sidebar, false = iconic sidebar
   const [isExpanded, setIsExpanded] = useState(true);
-
-  useEffect(() => {
-    document.documentElement.classList.toggle('dark', dark);
-  }, [dark]);
 
   const navItems = NAV_BY_ROLE[role] ?? NAV_BY_ROLE.Student;
   const isStudent = role === 'Student';
@@ -148,11 +180,16 @@ const DashboardLayout = () => {
           <button 
             onClick={() => setIsExpanded(!isExpanded)}
             style={{ 
+<<<<<<< HEAD
               position: 'absolute',
               right: isExpanded ? 16 : 0,
               left:  isExpanded ? 'auto' : 0,
               top: 24, width: 28, height: 28,
               margin: isExpanded ? 0 : '0 auto',
+=======
+              position: 'absolute', right: isExpanded ? 16 : 0, top: 24, width: 28, height: 28, 
+               margin: isExpanded ? 0 : '0 auto', left: isExpanded ? 'auto' : 0, // center if collapsed
+>>>>>>> 43f09aa (Fix grievance routing logic: category mapping, AI classification override, and exhaustive integration tests)
               borderRadius: '50%', background: DS.surface, border: `1px solid ${DS.surfaceHigh}`, 
               display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 2, 
               color: DS.text, boxShadow: `0 4px 12px rgba(0,0,0,0.05)`, transition: 'transform 0.4s' 

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ShieldCheck, Zap, Clock, ArrowRight, Lock, Fingerprint, Globe } from 'lucide-react';
+import { ShieldCheck, Zap, ArrowRight, Lock, Fingerprint, Globe } from 'lucide-react';
 
 // ── Stitch "Volt Sentinel" Design Tokens (Extreme Premium) ────────────────────
 const DS = {

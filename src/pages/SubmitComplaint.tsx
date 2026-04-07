@@ -1,4 +1,9 @@
+<<<<<<< HEAD
 import React, { useState } from 'react';
+=======
+import { useState, useEffect } from 'react';
+import { Lock, Zap, ShieldCheck, Lightbulb, Loader2, ArrowRight } from 'lucide-react';
+>>>>>>> 43f09aa (Fix grievance routing logic: category mapping, AI classification override, and exhaustive integration tests)
 import { useNavigate } from 'react-router-dom';
 import { 
   Send, AlertCircle, FileText, Layout, 
@@ -25,6 +30,7 @@ const DS = {
 };
 
 const CATEGORIES = [
+<<<<<<< HEAD
   { id: 'Hostel',     label: 'Hostel & Mess',      icon: <MapPin size={20}/> },
   { id: 'Academic',   label: 'Academic & Exams',   icon: <FileText size={20}/> },
   { id: 'Department', label: 'Departmental Issues',icon: <Layout size={20}/> },
@@ -32,6 +38,73 @@ const CATEGORIES = [
   { id: 'Safety',     label: 'Safety & Security',  icon: <ShieldCheck size={20}/> },
 ];
 
+=======
+  'Academic',
+  'Faculty Issue',
+  'Examination',
+  'Department',
+  'Hostel',
+  'Food',
+  'Infrastructure',
+  'Safety',
+  'Admin',
+  'General',
+];
+
+const PRIORITIES = ['Low', 'Medium', 'High', 'Critical'] as const;
+type Priority = typeof PRIORITIES[number];
+
+const PRIORITY_COLORS: Record<Priority, { active: string; text: string }> = {
+  Low:      { active: DS.blue,    text: '#FFFFFF' },
+  Medium:   { active: DS.green,   text: '#FFFFFF' },
+  High:     { active: DS.amber,   text: '#FFFFFF' },
+  Critical: { active: DS.red,     text: '#FFFFFF' },
+};
+
+const predictCategory = (desc: string): { category: string; assignedTo: string; resolution: string } | null => {
+  const d = desc.toLowerCase();
+  if (d.length < 15) return null;
+
+  // Safety / Harassment (highest priority check)
+  if (d.includes('harass') || d.includes('ragging') || d.includes('threat') || d.includes('abuse') || d.includes('violence') || d.includes('bully'))
+    return { category: 'Safety', assignedTo: 'Dean of Students', resolution: '1–2 days (Urgent)' };
+
+  // Hostel / Living conditions → Warden
+  if (d.includes('hostel') || d.includes('mess') || d.includes('dormitory') || d.includes('washroom') || d.includes('bathroom') || d.includes('toilet') || d.includes('water supply') || d.includes('drinking water') || d.includes('mattress') || d.includes('locker'))
+    return { category: 'Hostel', assignedTo: 'Warden', resolution: '2–4 days' };
+
+  // Food quality → Warden
+  if (d.includes('food quality') || d.includes('bad food') || d.includes('stale') || d.includes('unhygienic') || d.includes('insect') || d.includes('mess food'))
+    return { category: 'Food', assignedTo: 'Warden', resolution: '1–3 days' };
+
+  // Faculty behaviour → Faculty
+  if (d.includes('professor') || d.includes('teacher') || d.includes('lecturer') || d.includes('faculty') || d.includes('favouritism') || d.includes('bias') || d.includes('unfair evaluation') || d.includes('misbehaviour'))
+    return { category: 'Faculty Issue', assignedTo: 'Faculty / HOD', resolution: '3–5 days' };
+
+  // Examination / results → HOD
+  if (d.includes('exam') || d.includes('result') || d.includes('revaluation') || d.includes('hall ticket') || d.includes('answer sheet') || d.includes('malpractice'))
+    return { category: 'Examination', assignedTo: 'HOD / Exam Cell', resolution: '3–5 days' };
+
+  // Academic performance / assignments → Faculty
+  if (d.includes('marks') || d.includes('grade') || d.includes('attendance') || d.includes('syllabus') || d.includes('assignment') || d.includes('coursework') || d.includes('academic'))
+    return { category: 'Academic', assignedTo: 'Department Faculty', resolution: '3–5 days' };
+
+  // Department issues → HOD
+  if (d.includes('department') || d.includes('hod') || d.includes('placement') || d.includes('internship'))
+    return { category: 'Department', assignedTo: 'HOD', resolution: '4–6 days' };
+
+  // Campus infrastructure → Dean
+  if (d.includes('wifi') || d.includes('internet') || d.includes('projector') || d.includes('library') || d.includes('lab') || d.includes('laboratory') || d.includes('building') || d.includes('lift') || d.includes('elevator') || d.includes('bench') || d.includes('sports'))
+    return { category: 'Infrastructure', assignedTo: 'Dean of Academic Affairs', resolution: '5–7 days' };
+
+  // Admin / fees / certificates → Admin
+  if (d.includes('fee') || d.includes('portal') || d.includes('admission') || d.includes('certificate') || d.includes('document') || d.includes('scholarship') || d.includes('refund') || d.includes('bonafide') || d.includes('id card'))
+    return { category: 'Admin', assignedTo: 'Administrative Office', resolution: '5–7 days' };
+
+  return { category: 'General', assignedTo: 'Grievance Committee (Dean)', resolution: '5–7 days' };
+};
+
+>>>>>>> 43f09aa (Fix grievance routing logic: category mapping, AI classification override, and exhaustive integration tests)
 const SubmitComplaint = () => {
   const navigate = useNavigate();
   const [description, setDescription] = useState('');
@@ -51,9 +124,15 @@ const SubmitComplaint = () => {
       const res = await api.post('/Grievance/create', { 
         description: `[CATEGORY:${selectedCategory}] ${description}`
       });
+<<<<<<< HEAD
       setTrackingId(res.data.trackingId);
       setShowSuccess(true);
       setTimeout(() => navigate('/dashboard/student'), 5000);
+=======
+      setSubmitSuccess(true);
+      setTimeout(() => navigate('/dashboard/list'), 1500);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+>>>>>>> 43f09aa (Fix grievance routing logic: category mapping, AI classification override, and exhaustive integration tests)
     } catch (err: any) {
       alert(err.response?.data?.message || "Submission failed.");
     } finally {

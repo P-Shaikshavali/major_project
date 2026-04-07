@@ -12,6 +12,7 @@ import DeanDashboard      from './pages/DeanDashboard';
 import HODDashboard       from './pages/HODDashboard';
 import HostelDeanDashboard from './pages/HostelDeanDashboard';
 import AdminAnalytics     from './pages/AdminAnalytics';
+import WardenDashboard    from './pages/WardenDashboard';
 import DashboardLayout    from './components/Layout/DashboardLayout';
 import SmartChatbot       from './components/Chatbot/SmartChatbot';
 
@@ -35,6 +36,7 @@ function App() {
           <Route path="/"      element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
 
+<<<<<<< HEAD
           {/* Protected Dashboard Routes — JWT required */}
           <Route
             path="/dashboard"
@@ -45,6 +47,14 @@ function App() {
             }
           >
             <Route index element={<Navigate to="/dashboard/student" replace />} />
+=======
+          {/* 🛡️ Protected Route Wrapper */}
+          <Route 
+            path="/dashboard" 
+            element={localStorage.getItem('token') ? <DashboardLayout /> : <Navigate to="/login" replace />}
+          >
+            <Route index          element={<Navigate to="/dashboard/student" replace />} />
+>>>>>>> 43f09aa (Fix grievance routing logic: category mapping, AI classification override, and exhaustive integration tests)
 
             {/* Student */}
             <Route path="student"   element={<StudentDashboard />} />
@@ -66,6 +76,9 @@ function App() {
 
             {/* HOD */}
             <Route path="hod"       element={<HODDashboard />} />
+
+            {/* Warden - FULLY ISOLATED, separate from authority queue */}
+            <Route path="warden"      element={<WardenDashboard />} />
 
             {/* Admin */}
             <Route path="admin"     element={<AdminAnalytics />} />

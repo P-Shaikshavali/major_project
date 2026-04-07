@@ -23,6 +23,7 @@ namespace EGrievanceApi.Services
         // ── SIGNUP ────────────────────────────────────────────────────────────
         public async Task<User> RegisterUserAsync(RegisterDto request)
         {
+<<<<<<< HEAD
             // Normalise email
             var emailNorm = request.Email.Trim().ToLowerInvariant();
 
@@ -32,6 +33,17 @@ namespace EGrievanceApi.Services
 
             // ── Duplicate check ────────────────────────────────────────────
             if (await _context.Users.AnyAsync(u => u.Email.ToLower() == emailNorm))
+=======
+            // ── Role-Based Email Domain Validation (STRICT) ────────────────────────
+            if (request.Role == "Student" && !request.Email.EndsWith("@edu.in", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new Exception("Registration Denied: Student accounts MUST use a college email ending in '@edu.in'");
+            }
+            // For others, any valid email is allowed (removed the strict @gmail requirement)
+
+            if (await _context.Users.AnyAsync(u => u.Email == request.Email))
+            {
+>>>>>>> 43f09aa (Fix grievance routing logic: category mapping, AI classification override, and exhaustive integration tests)
                 throw new Exception("User with this email already exists.");
 
             var user = new User

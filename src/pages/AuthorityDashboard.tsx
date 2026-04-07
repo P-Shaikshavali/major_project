@@ -33,13 +33,28 @@ const STATUS_COLORS: Record<string,{text:string,bg:string}> = {
 };
 const TABS = ['All','Pending','Escalated','Resolved'];
 
+interface GrievanceDetails {
+  id: string;
+  status: string;
+  priority: string;
+  category: string;
+  trackingId: string;
+  createdAt: string;
+  description: string;
+  anonymousId?: string;
+  [key: string]: unknown; // fallback
+}
+
 const AuthorityDashboard = () => {
-  const [complaints, setComplaints]   = useState<any[]>([]);
+  const [complaints, setComplaints]   = useState<GrievanceDetails[]>([]);
   const [activeTab, setActiveTab]     = useState('Pending');
   const [updatingId, setUpdatingId]   = useState<string|null>(null);
 
   useEffect(() => {
-    api.get('/dashboard/authority').then(r => setComplaints(r.data || [])).catch(() => setComplaints([]));
+    api.get('/dashboard/authority').then(r => {
+      const data = r.data?.queue || r.data?.Queue || (Array.isArray(r.data) ? r.data : []);
+      setComplaints(data);
+    }).catch(() => setComplaints([]));
   }, []);
 
   const filtered = complaints.filter(c => {
@@ -138,7 +153,7 @@ const AuthorityDashboard = () => {
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {filtered.map((c:any, i:number) => {
+            {filtered.map((c:GrievanceDetails, i:number) => {
               const sc = STATUS_COLORS[c.status] || STATUS_COLORS.Submitted;
               return (
                 <div key={i} style={{ 

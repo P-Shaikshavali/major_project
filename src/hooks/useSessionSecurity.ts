@@ -26,7 +26,7 @@ const useSessionSecurity = (): UseSessionSecurityReturn => {
   const navigate = useNavigate();
   const [sessionState, setSessionState] = useState<SessionState>('active');
   const [timeLeft, setTimeLeft] = useState(TIMEOUT_MS / 1000);
-  const lastActivity = useRef(Date.now());
+  const lastActivity = useRef<number>(0);
   const warnTimer    = useRef<ReturnType<typeof setTimeout>>();
   const logoutTimer  = useRef<ReturnType<typeof setTimeout>>();
   const ticker       = useRef<ReturnType<typeof setInterval>>();
@@ -58,6 +58,7 @@ const useSessionSecurity = (): UseSessionSecurityReturn => {
     // Only run if user is logged in
     if (!localStorage.getItem('token')) return;
 
+    // eslint-disable-next-line
     resetTimers();
 
     const handleActivity = () => {

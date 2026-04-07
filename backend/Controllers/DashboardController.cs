@@ -56,6 +56,7 @@ namespace EGrievanceApi.Controllers
             });
         }
 
+<<<<<<< HEAD
         [HttpGet("faculty")]
         [Authorize(Roles = "Faculty")]
         public async Task<IActionResult> GetFacultyDashboard()
@@ -64,6 +65,19 @@ namespace EGrievanceApi.Controllers
             _anonymityService.MaskIdentities(assignedGrievances);
             return Ok(assignedGrievances); // Matches expected structure
         }
+=======
+        [HttpGet("authority")]
+        [Authorize(Roles = "Faculty,Warden,HOD,Dean")]
+        public async Task<IActionResult> GetAuthorityDashboard()
+        {
+            var role = GetCurrentUserRole();
+            
+            var assignedGrievances = await _context.Grievances
+                .Include(g => g.User)
+                .Where(g => g.AssignedToRole == role)
+                .AsNoTracking()
+                .ToListAsync();
+>>>>>>> 43f09aa (Fix grievance routing logic: category mapping, AI classification override, and exhaustive integration tests)
 
         [HttpGet("warden")]
         [Authorize(Roles = "Warden")]
@@ -86,8 +100,43 @@ namespace EGrievanceApi.Controllers
         [Authorize(Roles = "Admin,Dean")]
         public async Task<IActionResult> GetAdminDashboard()
         {
+<<<<<<< HEAD
             var data = await _adminService.GetGlobalDashboardDataAsync();
             return Ok(data);
+=======
+            var all = await _context.Grievances.ToListAsync();
+
+            // Per-role complaint queues for supervisory oversight
+            var byRole = new
+            {
+                Warden  = all.Count(g => g.AssignedToRole == "Warden"),
+                Faculty = all.Count(g => g.AssignedToRole == "Faculty"),
+                HOD     = all.Count(g => g.AssignedToRole == "HOD"),
+                Dean    = all.Count(g => g.AssignedToRole == "Dean"),
+                Admin   = all.Count(g => g.AssignedToRole == "Admin"),
+            };
+
+            // Recent complaints across ALL roles — supervisory feed (latest 20)
+            var recentAll = all.OrderByDescending(g => g.CreatedAt).Take(20).Select(g => new
+            {
+                g.TrackingId, g.Category, g.Priority, g.Status,
+                g.AssignedToRole, g.IsEscalated,
+                g.CreatedAt
+            });
+
+            return Ok(new
+            {
+                Total        = all.Count,
+                Active       = all.Count(g => g.Status != "Resolved"),
+                HighPriority = all.Count(g => g.Priority == "High"),
+                Escalated    = all.Count(g => g.IsEscalated),
+                Resolved     = all.Count(g => g.Status == "Resolved"),
+                ByRole       = byRole,
+                RecentAll    = recentAll,
+                ActiveUsers  = await _context.Users.CountAsync(),
+                AvgResolution = "N/A",
+            });
+>>>>>>> 43f09aa (Fix grievance routing logic: category mapping, AI classification override, and exhaustive integration tests)
         }
     }
 }

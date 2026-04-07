@@ -12,6 +12,7 @@ namespace EGrievanceApi.Data
         public DbSet<User> Users { get; set; }
         public DbSet<Grievance> Grievances { get; set; }
         public DbSet<AuditLog> AuditLogs { get; set; }
+        public DbSet<FeeStatus> FeeStatuses { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

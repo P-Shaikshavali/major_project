@@ -82,6 +82,7 @@ builder.Services.AddAuthorization(options =>
 });
 
 // 4. Register Custom Services
+<<<<<<< HEAD
 builder.Services.AddSignalR(); // Enable WebSockets early
 builder.Services.AddTransient<EGrievanceApi.Hubs.GrievanceHub>(); // Explictly map the hub to DI
 
@@ -99,6 +100,17 @@ builder.Services.AddScoped<IStudentIntelligenceService, StudentIntelligenceServi
 builder.Services.AddScoped<IHODService, HODService>();
 
 // builder.Services.AddHostedService<EscalationHostedService>();
+=======
+builder.Services.AddScoped<EGrievanceApi.Services.IAuthService, EGrievanceApi.Services.AuthService>();
+builder.Services.AddScoped<EGrievanceApi.Services.IAIEngineService, EGrievanceApi.Services.AIEngineService>();
+builder.Services.AddScoped<EGrievanceApi.Services.IGrievanceRoutingService, EGrievanceApi.Services.GrievanceRoutingService>();
+builder.Services.AddScoped<EGrievanceApi.Services.IGrievanceService, EGrievanceApi.Services.GrievanceService>();
+builder.Services.AddScoped<EGrievanceApi.Services.IChatbotService, EGrievanceApi.Services.ChatbotService>();
+builder.Services.AddScoped<EGrievanceApi.Services.IAnonymityService, EGrievanceApi.Services.AnonymityService>();
+builder.Services.AddScoped<EGrievanceApi.Services.IFacultyGrievanceService, EGrievanceApi.Services.FacultyGrievanceService>();
+builder.Services.AddScoped<EGrievanceApi.Services.IWardenGrievanceService, EGrievanceApi.Services.WardenGrievanceService>();
+builder.Services.AddHostedService<EGrievanceApi.Services.EscalationHostedService>();
+>>>>>>> 43f09aa (Fix grievance routing logic: category mapping, AI classification override, and exhaustive integration tests)
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

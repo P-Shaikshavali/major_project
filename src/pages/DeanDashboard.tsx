@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
-import { ShieldCheck, AlertTriangle, TrendingUp, ClipboardList, RefreshCw, CheckCircle, Shield } from 'lucide-react';
+import { ShieldCheck, AlertTriangle, TrendingUp, ClipboardList, RefreshCw, CheckCircle } from 'lucide-react';
 import api from '../services/api';
 
 // ── Stitch "Emerald Sentinel" Design Tokens ──────────────────────────────────
@@ -35,7 +35,15 @@ const STATUS_MAP: Record<string, { bg: string; text: string }> = {
   Escalated:  { bg: DS.redLight,    text: DS.red },
 };
 
-const KpiCard = ({ icon, label, value, color, bg }: any) => (
+interface KpiCardProps {
+  icon: React.ReactNode;
+  label: string;
+  value: number | string;
+  color: string;
+  bg: string;
+}
+
+const KpiCard = ({ icon, label, value, color, bg }: KpiCardProps) => (
   <div style={{ background: DS.surface, borderRadius: DS.radiusCard, padding: '24px', boxShadow: DS.shadowAmbient, display: 'flex', flexDirection: 'column', gap: 16, border: '1px solid rgba(255,255,255,0.8)' }}>
     <div style={{ width: 44, height: 44, borderRadius: 14, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color }}>{icon}</div>
     <div>
@@ -45,8 +53,21 @@ const KpiCard = ({ icon, label, value, color, bg }: any) => (
   </div>
 );
 
+interface GrievanceItem {
+  id: number;
+  status: string;
+  priority: string;
+  category: string;
+  trackingId: string;
+  createdAt: string;
+  description: string;
+  anonymousId?: string;
+  isEscalated: boolean;
+  [key: string]: unknown;
+}
+
 const DeanDashboard = () => {
-  const [complaints, setComplaints] = useState<any[]>([]);
+  const [complaints, setComplaints] = useState<GrievanceItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'overview' | 'escalated' | 'all' | 'audits' | 'performance'>('overview');
   const [updatingId, setUpdatingId] = useState<number | null>(null);
@@ -54,6 +75,7 @@ const DeanDashboard = () => {
   const [globalData, setGlobalData] = useState<any>(null);
 
   useEffect(() => {
+<<<<<<< HEAD
     Promise.all([
       api.get('/admin/dashboard'),
       api.get('/admin/audit-logs'),
@@ -63,6 +85,12 @@ const DeanDashboard = () => {
          setGlobalData(r1.data);
          setComplaints(r1.data?.allGrievances || []);
          setAuditLogs(r2.data || []); 
+=======
+    api.get('/dashboard/authority')
+      .then(r => {
+        const data = r.data?.queue || r.data?.Queue || (Array.isArray(r.data) ? r.data : []);
+        setComplaints(data);
+>>>>>>> 43f09aa (Fix grievance routing logic: category mapping, AI classification override, and exhaustive integration tests)
       })
       .catch(() => setComplaints([]))
       .finally(() => setLoading(false));
@@ -179,6 +207,20 @@ const DeanDashboard = () => {
                 No category data available
               </div>
             )}
+<<<<<<< HEAD
+=======
+            
+            {pieData.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px 20px', justifyContent: 'center', marginTop: 16 }}>
+                {pieData.map((c:{name:string, value:number}, i:number) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ width: 10, height: 10, borderRadius: '50%', background: CHART_COLORS[i % CHART_COLORS.length] }} />
+                    <span style={{ fontSize: 13, color: DS.textMuted, fontWeight: 500 }}>{c.name}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+>>>>>>> 43f09aa (Fix grievance routing logic: category mapping, AI classification override, and exhaustive integration tests)
           </div>
         )}
 
@@ -232,7 +274,7 @@ const DeanDashboard = () => {
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {listToShow.map((c: any, i: number) => {
+              {listToShow.map((c: GrievanceItem, i: number) => {
                 const sc = STATUS_MAP[c.status] || STATUS_MAP.Submitted;
                 return (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '16px', background: DS.surfaceLow, borderRadius: 12 }}>

@@ -32,8 +32,18 @@ const STATUS_STYLES: Record<string, { bg: string; color: string }> = {
   Escalated:  { bg: DS.redLight,   color: DS.red },
 };
 
+interface GrievanceItem {
+  id?: number | string;
+  trackingId?: string;
+  category?: string;
+  status: string;
+  description?: string;
+  createdAt: string;
+  [key: string]: unknown;
+}
+
 const ComplaintList = () => {
-  const [complaints, setComplaints] = useState<any[]>([]);
+  const [complaints, setComplaints] = useState<GrievanceItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('All');
@@ -48,11 +58,11 @@ const ComplaintList = () => {
     return matchSearch && matchFilter;
   });
 
-  const onInputFocus = (e: any) => {
+  const onInputFocus = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => {
     e.target.style.background = '#F0F5FF';
     e.target.style.boxShadow = `inset 0 -2px 0 ${DS.blue}`;
   };
-  const onInputBlur = (e: any) => {
+  const onInputBlur = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => {
     e.target.style.background = DS.surfaceLow;
     e.target.style.boxShadow = 'none';
   };
@@ -122,7 +132,7 @@ const ComplaintList = () => {
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead>
               <tr style={{ background: DS.bg }}>
-                {['Tracking ID', 'Category', 'Description', 'Date Filed', 'Status'].map((h, i) => (
+                {['Tracking ID', 'Category', 'Description', 'Date Filed', 'Status'].map(h => (
                   <th key={h} style={{ 
                     padding: '16px 24px', fontSize: 12, fontWeight: 700, color: DS.textFaint, 
                     textTransform: 'uppercase', letterSpacing: '0.06em', whiteSpace: 'nowrap',

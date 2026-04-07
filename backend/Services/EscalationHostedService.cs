@@ -59,7 +59,11 @@ namespace EGrievanceApi.Services
             {
                 grievance.IsEscalated = true;
                 grievance.Status = "Escalated";
+<<<<<<< HEAD
                 grievance.AssignedTo = "Dean";
+=======
+                grievance.AssignedToRole = "CollegeDean";
+>>>>>>> 43f09aa (Fix grievance routing logic: category mapping, AI classification override, and exhaustive integration tests)
 
                 context.AuditLogs.Add(new AuditLog 
                 {

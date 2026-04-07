@@ -23,8 +23,11 @@ namespace EGrievanceApi.Models
         // High, Medium, Low
         public string Priority { get; set; } = "Low";
         
-        // Role assigned to handle it (e.g., Warden, Faculty, Dean)
-        public string AssignedTo { get; set; } = "Unassigned";
+        // Role assigned to handle it (e.g., Warden, Faculty, HOD, Dean)
+        public string AssignedToRole { get; set; } = "Unassigned";
+        
+        // Optional: Specific user assigned to handle it
+        public int? AssignedToUserId { get; set; }
         
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? ResolvedAt { get; set; }
