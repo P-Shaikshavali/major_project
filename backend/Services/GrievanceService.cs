@@ -36,22 +36,8 @@ namespace EGrievanceApi.Services
             var last    = await _context.Grievances.OrderByDescending(g => g.Id).FirstOrDefaultAsync();
             string trackingId = $"GRV-{((last?.Id ?? 0) + 1):D4}";
 
-<<<<<<< HEAD
-            // 2. AI Pipeline & Manual Tag Extraction
-            string category = "General";
             string desc = request.Description;
-=======
-            // 2. AI Engine Pipeline 
-            var aiCategory = _aiEngine.ClassifyCategory(request.Description);
-            var aiPriority = _aiEngine.PredictPriority(request.Description);
-            
-            // Prefer user's explicit category over AI, unless it's null
-            var category = !string.IsNullOrWhiteSpace(request.Category) ? request.Category : aiCategory;
-            var priority = !string.IsNullOrWhiteSpace(request.Priority) ? request.Priority : aiPriority;
-            
-            var credibility = await _aiEngine.CalculateCredibilityScoreAsync(userId, request.Description);
-            var assignedTo = _routingService.DetermineAssignedRole(category);
->>>>>>> 43f09aa (Fix grievance routing logic: category mapping, AI classification override, and exhaustive integration tests)
+            string category = string.Empty;
 
             // Check for manual category override from frontend selection
             if (desc.StartsWith("[CATEGORY:", StringComparison.OrdinalIgnoreCase))
@@ -63,15 +49,20 @@ namespace EGrievanceApi.Services
                     desc = desc.Substring(end + 1).Trim(); // Strip tag for storage
                 }
             }
-            else
+
+            if (string.IsNullOrWhiteSpace(category) && !string.IsNullOrWhiteSpace(request.Category))
             {
-                category = _aiEngine.ClassifyCategory(desc);
+                category = request.Category;
             }
 
-            var priority    = _aiEngine.PredictPriority(desc);
+            var aiCategory = _aiEngine.ClassifyCategory(desc);
+            var aiPriority = _aiEngine.PredictPriority(desc);
+            
+            category = !string.IsNullOrWhiteSpace(category) ? category : aiCategory;
+            var priority = !string.IsNullOrWhiteSpace(request.Priority) ? request.Priority : aiPriority;
+            
             var credibility = await _aiEngine.CalculateCredibilityScoreAsync(userId, desc);
-            var assignedTo  = _routingService.DetermineAssignedRole(category);
-
+            var assignedTo = _routingService.DetermineAssignedRole(category);
 
             // 3. High priority → flag escalated so Admin always sees it
             bool isEscalated = priority == "High";
@@ -87,12 +78,8 @@ namespace EGrievanceApi.Services
 
                 Priority         = priority,
                 CredibilityScore = credibility,
-<<<<<<< HEAD
-                AssignedTo       = assignedTo,
+                AssignedToRole   = assignedTo,
                 IsEscalated      = isEscalated
-=======
-                AssignedToRole = assignedTo
->>>>>>> 43f09aa (Fix grievance routing logic: category mapping, AI classification override, and exhaustive integration tests)
             };
 
             _context.Grievances.Add(grievance);

@@ -19,59 +19,34 @@ namespace EGrievanceApi.Services
         {
             var lowerText = complaintText.ToLower();
 
-<<<<<<< HEAD
-            // ⚠️ Keys here MUST match GrievanceRoutingService switch cases exactly
             var categoryCorpus = new Dictionary<string, string>
             {
-                { "Hostel",     "food mess wifi room cleaning water bed bathroom accommodation hostel warden dormitory" },
-                { "Academic",   "marks grade faculty attendance syllabus exam lecture class assignment result semester" },
-                { "Department", "hod head department transfer promotion discrimination staff department issue complaint professor internal" },
-                { "Facilities", "ac projector bench library lab infrastructure internet light fan equipment maintenance repairs" },
-                { "Safety",     "harassment ragging fight security threat abuse bullying unsafe danger violence intimidate" },
-=======
-            // Simulate semantic vectors/clusters
-            // Semantically distinct keyword clusters per category
-            var categories = new Dictionary<string, List<string>>
-            {
                 // Hostel / campus-living issues → Warden
-                { "Hostel", new List<string> { "hostel", "mess", "dining", "canteen", "dormitory", "dorm",
-                    "room leak", "ceiling", "mattress", "bedsheet", "locker", "washroom",
-                    "bathroom", "toilet", "drinking water", "water supply", "inmate", "warden" } },
+                { "Hostel", "hostel mess dining canteen dormitory dorm room leak ceiling mattress bedsheet locker washroom bathroom toilet drinking water supply inmate warden" },
 
                 // Food-quality (subset of hostel living) → Warden
-                { "Food", new List<string> { "food quality", "bad food", "stale", "undercooked",
-                    "hygiene", "insect", "unhygienic", "mess food" } },
+                { "Food", "food quality bad stale undercooked hygiene insect unhygienic mess" },
 
                 // Academic performance / teaching issues → Faculty
-                { "Academic", new List<string> { "marks", "grade", "grading", "internal", "attendance",
-                    "syllabus", "curriculum", "assignment", "project", "notes", "lecture quality",
-                    "academic", "teaching", "class", "coursework" } },
+                { "Academic", "marks grade grading internal attendance syllabus curriculum assignment project notes lecture academic teaching class coursework" },
 
                 // Faculty/staff behaviour → Faculty / HOD
-                { "Faculty Issue", new List<string> { "professor", "teacher", "lecturer", "staff behaviour",
-                    "faculty", "favouritism", "partial", "bias", "unfair evaluation", "misbehaviour" } },
+                { "Faculty Issue", "professor teacher lecturer staff behaviour faculty favouritism partial bias unfair evaluation misbehaviour" },
 
                 // Examination / results → Examination Cell / HOD
-                { "Examination", new List<string> { "exam", "examination", "result", "revaluation",
-                    "answer sheet", "paper", "hall ticket", "seating", "malpractice", "cheating" } },
+                { "Examination", "exam examination result revaluation answer sheet paper hall ticket seating malpractice cheating" },
 
                 // Department / departmental infra → HOD
-                { "Department", new List<string> { "department", "hod", "departmental", "branch",
-                    "placement", "internship", "alumni" } },
+                { "Department", "department hod departmental branch placement internship alumni" },
 
                 // Campus / general infrastructure → Dean / Admin
-                { "Infrastructure", new List<string> { "wifi", "internet", "ac", "projector", "bench",
-                    "library", "lab", "laboratory", "building", "elevator", "lift", "corridor",
-                    "parking", "sports", "gymnasium", "canteen facility" } },
+                { "Infrastructure", "wifi internet ac projector bench library lab laboratory building elevator lift corridor parking sports gymnasium canteen facility road pipe water logging maintenance" },
 
                 // Safety / harassment / discrimination → Dean
-                { "Safety", new List<string> { "harassment", "ragging", "fight", "security", "threat",
-                    "abuse", "violence", "discrimination", "bully", "intimidat" } },
+                { "Safety", "harassment ragging fight security threat threats abuse violence discrimination bully intimidat unsafe" },
 
                 // Admin / fee / certificates → Admin
-                { "Admin", new List<string> { "fee", "fees", "portal", "admission", "certificate",
-                    "document", "transfer", "scholarship", "refund", "bonafide", "id card" } },
->>>>>>> 43f09aa (Fix grievance routing logic: category mapping, AI classification override, and exhaustive integration tests)
+                { "Admin", "fee fees portal admission certificate document transfer scholarship refund bonafide id card" }
             };
 
             var bestCategory = "General";
@@ -221,14 +196,12 @@ namespace EGrievanceApi.Services
             for (int i = 0; i < allWords.Count; i++)
             {
                 string word = allWords[i];
+                // Remove flawed IDF that zeros out matches
                 double tf1 = (double)words1.Count(w => w == word) / words1.Count;
                 double tf2 = (double)words2.Count(w => w == word) / words2.Count;
-                
-                // Simple IDF simulation (inverse document frequency approximation)
-                double idf = Math.Log10(2.0 / ((words1.Contains(word) ? 1 : 0) + (words2.Contains(word) ? 1 : 0)));
 
-                vector1[i] = tf1 * idf;
-                vector2[i] = tf2 * idf;
+                vector1[i] = tf1;
+                vector2[i] = tf2;
             }
 
             // Dot Product and Magnitudes

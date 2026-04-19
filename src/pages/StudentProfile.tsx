@@ -22,7 +22,6 @@ const DS = {
   shadowAmbient: '0 24px 48px rgba(0,0,0,0.04)',
 };
 
-<<<<<<< HEAD
 const CHART_COLORS = [DS.blue, DS.purple, DS.green, DS.amber];
 
 const StudentProfile = () => {
@@ -38,35 +37,6 @@ const StudentProfile = () => {
     api.get('/student/profile/intelligence')
        .then(res => setData(res.data))
        .catch(console.error);
-=======
-interface CardProps { children: React.ReactNode; style?: React.CSSProperties; noPadding?: boolean; }
-const Card = ({ children, style = {}, noPadding = false }: CardProps) => (
-  <div style={{ 
-    background: DS.surface, borderRadius: DS.radiusCard, padding: noPadding ? 0 : 32, 
-    boxShadow: DS.shadowAmbient, border: '1px solid rgba(255,255,255,0.8)',
-    display: 'flex', flexDirection: 'column' as const, overflow: 'hidden', ...style 
-  }}>
-    {children}
-  </div>
-);
-
-const ProgressBar = ({ value, color }: { value: number; color: string }) => (
-  <div style={{ height: 8, background: DS.surfaceLow, borderRadius: 99, overflow: 'hidden' }}>
-    <div style={{ height: '100%', width: `${Math.min(value, 100)}%`, background: color, borderRadius: 99, transition: 'width 1s cubic-bezier(0.16, 1, 0.3, 1)' }} />
-  </div>
-);
-
-const StudentProfile = () => {
-  const [profile] = useState<{name: string, studentId: string, department: string, year: string, role: string} | null>({ name: 'Student User', studentId: 'STU-2024-001', department: 'Computer Science', year: '3rd Year', role: 'Student' });
-  const [analytics, setAnalytics] = useState<{averageCredibility?: number, resolutionEfficiency?: number, escalationRate?: number, insight?: string} | null>(null);
-  const [history, setHistory] = useState<{trackingId: string, category: string, status: string, createdAt: string}[]>([]);
-
-  useEffect(() => {
-    api.get('/dashboard/student').then(res => {
-      setAnalytics(res.data.behavioralAnalytics);
-      setHistory(res.data.recentComplaints || []);
-    }).catch(console.error);
->>>>>>> 43f09aa (Fix grievance routing logic: category mapping, AI classification override, and exhaustive integration tests)
   }, []);
 
   useEffect(() => {

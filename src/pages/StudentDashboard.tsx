@@ -2,8 +2,7 @@ import { useEffect, useState } from 'react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { PlusCircle, FolderOpen, Brain, TrendingUp, ChevronRight, ShieldCheck, Zap, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-// @ts-ignore
-import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
+
 import api from '../services/api';
 
 // ── Stitch "Academic Sentinel" Design Tokens ──────────────────────────────────
@@ -34,14 +33,8 @@ const CHART_COLORS = [DS.blue, DS.green, DS.amber, '#6366F1', '#8B5CF6'];
 const STATUS_COLORS: Record<string, string> = { Resolved: DS.green, Submitted: DS.blue, InProgress: DS.amber, Escalated: DS.red };
 const STATUS_BGS: Record<string, string> = { Resolved: DS.greenLight, Submitted: DS.blueLight, InProgress: DS.amberLight, Escalated: DS.redLight };
 
-<<<<<<< HEAD
 const KpiCard = ({ icon, label, value, color, bg }: any) => (
   <div className="glass-card kpi-hover" style={{ background: 'rgba(255, 255, 255, 0.75)', borderRadius: DS.radiusCard, padding: '24px', boxShadow: DS.shadowAmbient, display: 'flex', flexDirection: 'column', gap: 16, border: '1px solid rgba(255,255,255,0.8)', backdropFilter: 'blur(20px)', transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)' }}>
-=======
-interface KpiCardProps { icon: React.ReactNode; label: string; value: number | string; color: string; bg: string; }
-const KpiCard = ({ icon, label, value, color, bg }: KpiCardProps) => (
-  <div style={{ background: DS.surface, borderRadius: DS.radiusCard, padding: '24px', boxShadow: DS.shadowAmbient, display: 'flex', flexDirection: 'column', gap: 16, border: '1px solid rgba(255,255,255,0.8)' }}>
->>>>>>> 43f09aa (Fix grievance routing logic: category mapping, AI classification override, and exhaustive integration tests)
     <div style={{ width: 44, height: 44, borderRadius: 14, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color }}>{icon}</div>
     <div>
       <p style={{ fontFamily: "'Manrope', sans-serif", fontSize: 32, fontWeight: 800, color: DS.text, letterSpacing: '-0.03em', lineHeight: 1 }}>{value}</p>
@@ -80,25 +73,9 @@ const StudentDashboard = () => {
   };
 
   useEffect(() => {
-<<<<<<< HEAD
     fetchData(); // initial loaded state
     
-    // 🔥 Attach SignalR Native Pipeline
-    const connection = new HubConnectionBuilder()
-      .withUrl("http://localhost:5275/hubs/grievance")
-      .configureLogging(LogLevel.Information)
-      .withAutomaticReconnect()
-      .build();
 
-    connection.start().then(() => {
-        connection.on("ReceiveSystemUpdate", () => fetchData());
-    }).catch(console.error);
-
-    return () => { connection.stop(); };
-=======
-    api.get('/dashboard/student').then(r => setData(r.data)).catch(console.error);
-    api.get('/fee/my-status').then(r => setFeeStatus(r.data)).catch(() => {});
->>>>>>> 43f09aa (Fix grievance routing logic: category mapping, AI classification override, and exhaustive integration tests)
   }, []);
 
   const kpis = [
@@ -122,7 +99,6 @@ const StudentDashboard = () => {
   };
 
   return (
-<<<<<<< HEAD
     <div style={{ padding: '40px 48px', minHeight: '100vh', background: 'transparent', fontFamily: "'Inter', sans-serif", position: 'relative', zIndex: 1 }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600&display=swap');
@@ -130,31 +106,6 @@ const StudentDashboard = () => {
         .lux-text { background: linear-gradient(135deg, ${DS.blueDark}, ${DS.blue}); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
       `}</style>
       
-=======
-    <div style={{ padding: '40px 48px', minHeight: '100vh', background: DS.bg, fontFamily: "'Inter', sans-serif" }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600&display=swap');`}</style>
-
-      {/* Fee Reminder Banner */}
-      {feeStatus?.needsAttention && (
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 14,
-          background: feeStatus.status === 'Overdue' ? DS.redLight : DS.amberLight,
-          border: `1px solid ${feeStatus.status === 'Overdue' ? DS.red : DS.amber}40`,
-          borderRadius: 14, padding: '14px 20px', marginBottom: 24,
-        }}>
-          <AlertTriangle size={20} color={feeStatus.status === 'Overdue' ? DS.red : DS.amber} style={{ flexShrink: 0 }} />
-          <div>
-            <p style={{ fontWeight: 700, fontSize: 14, color: feeStatus.status === 'Overdue' ? DS.red : DS.amber }}>
-              {feeStatus.status === 'Overdue' ? '🚨 Fee Overdue!' : '⚠️ Fee Payment Reminder'}
-            </p>
-            <p style={{ fontSize: 13, color: DS.textMuted, marginTop: 2 }}>
-              Your <strong>{feeStatus.semester}</strong> semester fee is <strong>{feeStatus.status}</strong>.
-              Due date: <strong>{new Date(feeStatus.dueDate).toLocaleDateString()}</strong>. Please contact the Admin office.
-            </p>
-          </div>
-        </div>
-      )}
->>>>>>> 43f09aa (Fix grievance routing logic: category mapping, AI classification override, and exhaustive integration tests)
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 40 }}>
         <div>

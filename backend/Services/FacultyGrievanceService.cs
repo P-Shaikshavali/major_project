@@ -38,11 +38,7 @@ namespace EGrievanceApi.Services
             // Query — NO .Include(g => g.User) to prevent accidental identity leakage
             var query = _context.Grievances
                 .AsNoTracking()
-<<<<<<< HEAD
-                .Where(g => g.AssignedTo == assignedRole);
-=======
-                .Where(g => g.AssignedToRole == "Faculty" || g.AssignedToRole == "Warden");
->>>>>>> 43f09aa (Fix grievance routing logic: category mapping, AI classification override, and exhaustive integration tests)
+                .Where(g => g.AssignedToRole == assignedRole);
 
             // Apply filters
             if (!string.IsNullOrEmpty(priority))
@@ -176,11 +172,7 @@ namespace EGrievanceApi.Services
 
             var grievances = await _context.Grievances
                 .AsNoTracking()
-<<<<<<< HEAD
-                .Where(g => g.AssignedTo == assignedRole)
-=======
-                .Where(g => g.AssignedToRole == "Faculty" || g.AssignedToRole == "Warden")
->>>>>>> 43f09aa (Fix grievance routing logic: category mapping, AI classification override, and exhaustive integration tests)
+                .Where(g => g.AssignedToRole == assignedRole)
                 .ToListAsync();
 
             var resolved = grievances.Where(g => g.Status == "Resolved").ToList();

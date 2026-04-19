@@ -11,14 +11,6 @@ namespace EGrievanceApi.Services
         {
             return category switch
             {
-<<<<<<< HEAD
-                "Hostel"     => "Warden",     // Hostel → Warden
-                "Academic"   => "Faculty",    // Academic → Faculty
-                "Department" => "HOD",        // Department → HOD
-                "Facilities" => "Admin",      // Facilities → Admin
-                "Safety"     => "Dean",       // Safety → Dean
-                _            => "Admin"       // Default fallback
-=======
                 // ── Hostel / living conditions → Warden ──────────────────────
                 "Hostel"        => "Warden",
                 "Food"          => "Warden",
@@ -55,7 +47,6 @@ namespace EGrievanceApi.Services
 
                 // ── Fallback ──────────────────────────────────────────────────
                 _                => "Admin"
->>>>>>> 43f09aa (Fix grievance routing logic: category mapping, AI classification override, and exhaustive integration tests)
             };
         }
     }

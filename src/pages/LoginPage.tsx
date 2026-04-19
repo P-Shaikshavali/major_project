@@ -67,25 +67,11 @@ const LoginPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (LOCKED) return;
-<<<<<<< HEAD
 
     const validationError = validate();
     if (validationError) { setErrorMsg(validationError); return; }
 
     setIsLoading(true); setErrorMsg(''); setSuccessMsg('');
-=======
-    setIsLoading(true); setErrorMsg('');
-    
-    // ── Email Domain Validation ──────────────────────────────────────────────
-    if (!isLogin) {
-      const emailLower = email.toLowerCase();
-      if (role === 'Student' && !emailLower.endsWith('@edu.in')) {
-        setErrorMsg('❌ Access Denied: Student account registration requires a college "@edu.in" email.');
-        setIsLoading(false); return;
-      }
-    }
-
->>>>>>> 43f09aa (Fix grievance routing logic: category mapping, AI classification override, and exhaustive integration tests)
     try {
       if (isLogin) {
         // ── LOGIN FLOW ────────────────────────────────────────────────────
@@ -97,7 +83,6 @@ const LoginPage = () => {
         localStorage.setItem('token',    res.data.token);
         localStorage.setItem('userRole', serverRole);
         setFailCount(0);
-<<<<<<< HEAD
         navigate(roleRoute(serverRole));
 
       } else {
@@ -122,30 +107,6 @@ const LoginPage = () => {
         localStorage.setItem('token',    loginRes.data.token);
         localStorage.setItem('userRole', serverRole);
         navigate(roleRoute(serverRole));
-=======
-        
-        // Comprehensive Role-Based Navigation
-        if (role === 'Student') navigate('/dashboard/student');
-        else if (role === 'Faculty') navigate('/dashboard/faculty');
-        else if (role === 'Dean') navigate('/dashboard/dean');
-        else if (role === 'Admin') navigate('/dashboard/admin');
-        else if (role === 'Warden') navigate('/dashboard/warden');
-        else if (role === 'HOD') navigate('/dashboard/authority');
-        else navigate('/dashboard/authority');
-      } else {
-        await api.post('/auth/register', { name: sanitize(name), email: sanitize(email), password, role });
-        const loginRes = await api.post('/auth/login', { email: sanitize(email), password });
-        localStorage.setItem('token', loginRes.data.token);
-        localStorage.setItem('userRole', role);
-        
-        if (role === 'Student') navigate('/dashboard/student');
-        else if (role === 'Faculty') navigate('/dashboard/faculty');
-        else if (role === 'Dean') navigate('/dashboard/dean');
-        else if (role === 'Admin') navigate('/dashboard/admin');
-        else if (role === 'Warden') navigate('/dashboard/warden');
-        else if (role === 'HOD') navigate('/dashboard/authority');
-        else navigate('/dashboard/authority');
->>>>>>> 43f09aa (Fix grievance routing logic: category mapping, AI classification override, and exhaustive integration tests)
       }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
@@ -321,7 +282,6 @@ const LoginPage = () => {
 
             {/* Role Picker */}
             <div>
-<<<<<<< HEAD
               <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: DS.textFaint, marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                 {isLogin ? 'Your Role (for display)' : 'Register As'}
               </label>
@@ -329,13 +289,6 @@ const LoginPage = () => {
                 {(['Student', 'Faculty', 'Warden', 'Dean', 'HOD', 'Admin'] as const).map(r => (
                   <button key={r} id={`role-${r}`} type="button" onClick={() => setRole(r)} disabled={isLoading || LOCKED} className={`role-pill ${role === r ? 'active' : ''}`}>
                     {ROLE_ICONS[r]} {r}
-=======
-              <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: DS.textFaint, marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Authorization Role</label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
-                {['Student', 'Faculty', 'Warden', 'HOD', 'Dean', 'Admin'].map(r => (
-                  <button key={r} type="button" onClick={() => setRole(r)} disabled={isLoading || LOCKED} className={`role-pill ${role === r ? 'active' : ''}`}>
-                    {ROLE_ICONS[r] || <Shield size={16} />} {r}
->>>>>>> 43f09aa (Fix grievance routing logic: category mapping, AI classification override, and exhaustive integration tests)
                   </button>
                 ))}
               </div>
